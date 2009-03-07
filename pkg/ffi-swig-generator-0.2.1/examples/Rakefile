@@ -1,4 +1,0 @@
-require File.expand_path(File.join(File.dirname(__FILE__), %w[.. lib ffi-generator]))
-
-FFI::Generator::Task.new :input_fn => 'interfaces/*.i', :output_dir => 'generated'
-
