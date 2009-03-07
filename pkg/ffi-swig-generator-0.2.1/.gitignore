@@ -1,0 +1,8 @@
+pkg/
+generated/
+*.gem
+*.xml
+*#
+.#*
+announcement.txt
+
