@@ -45,14 +45,13 @@ From a Rakefile:
 
 == DOWNLOAD/INSTALL:
 
-To download and install the gem from github:
+To download and install from rubygems:
 
-  [sudo] gem sources -a http://gems.github.com
-  [sudo] gem install remogatto-ffi-swig-generator
+  [sudo] gem install ffi-swig-generator
 
 To download the develpment trunk:
 
-  git clone git://github.com/remogatto/ffi-swig-generator.git
+  hg clone http://kenai.com/hg/ruby-ffi~swig-generator 
 
 == EXAMPLES:
 
@@ -64,20 +63,15 @@ wiiuse.i is a enough complex example of a C header file interface. It
 reproduces the content of wiiuse.h, the header file of the wiiuse
 library. wiiuse is a C library that handles the connection with
 Nintendo Wiimote devices. The interface file is almost a mere
-copy/paste from the original header file.
-
-== QUICK START:
-
-  git clone git://github.com/remogatto/ffi-swig-generator.git
-  sudo apt-get install swig
-  sudo gem install nokogiri rake
-  cd ffi-swig-generator/examples && rake ffi:generate
+copy/paste from the original header file. See
+http://github.com/remogatto/ffi-wiiuse an updated revision of
+ffi-wiiuse library.
 
 == LICENSE:
 
 (The MIT License)
 
-Copyright (c) 2008 Andrea Fazzi
+Copyright (c) 2009 Andrea Fazzi
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

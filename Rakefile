@@ -22,14 +22,14 @@ task :default => 'spec:run'
 PROJ.name = 'ffi-swig-generator'
 PROJ.authors = 'Andrea Fazzi'
 PROJ.email = 'andrea.fazzi@alcacoop.it'
-PROJ.url = 'http://github.com/remogatto/ffi-swig-generator/tree/master'
+PROJ.url = 'http://kenai.com/projects/ruby-ffi'
 PROJ.version = FFI::Generator::VERSION
-PROJ.rubyforge.name = 'ffi-swig-generator'
+PROJ.rubyforge.name = 'ffi-swig-gen'
 
 PROJ.readme_file = 'README.rdoc'
 
 PROJ.ann.paragraphs << 'FEATURES' << 'SYNOPSIS' << 'REQUIREMENTS' << 'DOWNLOAD' << 'EXAMPLES'
-PROJ.ann.email[:from] = 'andrea.fazzi@alca.le.it'
+PROJ.ann.email[:from] = 'andrea.fazzi@alcacoop.it'
 PROJ.ann.email[:to] << 'dev@ruby-ffi.kenai.com' << 'users@ruby-ffi.kenai.com'
 PROJ.ann.email[:server] = 'smtp.gmail.com'
 
