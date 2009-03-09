@@ -108,7 +108,6 @@ module FFI
         if is_pointer?
           if @statement[/char/] and @statement.scan(/p\./).size == 1
             @statement = ':string'
-            # @decl.gsub!(/p\./, '')
             get_type
           else
             return ':pointer'
@@ -206,7 +205,7 @@ module FFI
     end
     class Structure < Node
       def self.camelcase(name)
-        name.gsub(/^\w|\_\w/).each {|c| c.upcase }.delete('_')
+        name.gsub(/^\w|\_\w/) { |c| c.upcase }.delete('_')
       end
       def initialize(params = { })
         super
