@@ -49,7 +49,8 @@ module TestLib
            :s_3, TestStruct3,
            :e, :int,
            :func, :cb,
-           :u, UnionT
+           :u, UnionT,
+           :callback, :cb
     )
   end
   attach_function :get_int, [ :pointer ], :int
@@ -148,8 +149,11 @@ describe Generator::Function do
   it 'should properly generate string arguments' do
     Generator::Function.new(:node => (@node / 'cdecl')[2]).to_s.should == "attach_function :func_3, [ :string ], :void"
   end
-  it 'should properly generate return type' do
+  it 'should properly generate string return type' do
     Generator::Function.new(:node => (@node / 'cdecl')[3]).to_s.should == "attach_function :func_4, [ :int ], :string"
+  end
+  it 'should generate string type only in case of pointer of type char (char *)' do
+    Generator::Function.new(:node => (@node / 'cdecl')[17]).to_s.should == "attach_function :func_17, [  ], :pointer"
   end
   it 'should properly generate void return type' do
     Generator::Function.new(:node => (@node / 'cdecl')[4]).to_s.should == "attach_function :func_5, [  ], :void"
@@ -177,6 +181,9 @@ describe Generator::Function do
     Generator::Function.new(:node => (@node / 'cdecl')[13]).to_s.should == "attach_function :func_13, [ callback(:callback, [ :double, :float ], :int) ], :void"
     Generator::Function.new(:node => (@node / 'cdecl')[14]).to_s.should == "attach_function :func_14, [ callback(:callback, [ :string ], :void) ], :void"
     Generator::Function.new(:node => (@node / 'cdecl')[15]).to_s.should == "attach_function :func_15, [ callback(:callback, [  ], :void) ], :void"
+  end
+  it 'should handle const qualifier return type' do
+    Generator::Function.new(:node => (@node / 'cdecl')[16]).to_s.should == "attach_function :func_16, [  ], :string"
   end
 end
 

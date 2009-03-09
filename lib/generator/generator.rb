@@ -60,6 +60,7 @@ module FFI
       def initialize(params = { })
         super
         @statement = params[:statement] || get_statement
+        @is_pointer = 0
       end
       def to_s
         get_type
@@ -72,7 +73,7 @@ module FFI
         Generator::TYPES.has_key?(@statement)
       end
       def is_pointer?
-        @statement[/^p\./] and not is_callback?
+        (@is_pointer > 0 or @statement[/^p\./]) and not is_callback?
       end
       def is_enum?
         @statement[/^enum/]
@@ -106,11 +107,14 @@ module FFI
       end
       def pointer
         if is_pointer?
-          if @statement[/char/] and @statement.scan(/p\./).size == 1
-            @statement = ':string'
+          @is_pointer += 1
+          if @statement.scan(/^p\.(.+)/).flatten[0]
+            @statement = @statement.scan(/^p\.(.+)/).flatten[0]
             get_type
+          elsif @statement == 'char' and @is_pointer == 2
+            ':string'
           else
-            return ':pointer'
+            ':pointer'
           end
         end        
       end
@@ -149,7 +153,7 @@ module FFI
         end
       end
       def get_type
-        constant || pointer || enum || typedef || native || struct || union || array || callback || "#{@statement}"
+        constant || typedef || pointer || enum || native || struct || union || array || callback || "#{@statement}"
       end
     end
     class Typedef < Type
@@ -247,14 +251,16 @@ module FFI
         params = get_params(@node).inject([]) do |array, node|
           array << Argument.new(:node => node).to_s
         end.collect { |p| "#{p}" }
-        @indent_str + "attach_function :#{@symname}, [ #{params.join(', ')} ], #{get_rvalue}"
+        @indent_str + "attach_function :#{@symname}, [ #{params.join(', ')} ], #{get_rtype}"
       end
       private
       def get_params(node)
         parmlist = node / './attributelist/parmlist/parm'
       end
-      def get_rvalue
-        Type.new(:node => @node, :statement => @statement.scan(/^f\(.*\)\.(.+)/).flatten[0]).to_s
+      def get_rtype
+        pointer = get_attr('decl').scan(/^f\(.*\)\.(p)/).flatten[0]
+        statement = pointer ? "p.#{get_attr('type')}" : get_attr('type')
+        Type.new(:statement => statement).to_s
       end
     end
     class Callback < Type

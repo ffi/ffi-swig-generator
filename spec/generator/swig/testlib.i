@@ -36,6 +36,7 @@ struct test_struct_2 {
   enum_t e;
   cb func;
   union_t u;
+  cb callback;
 };
 
 int get_int(struct test_struct* s);
