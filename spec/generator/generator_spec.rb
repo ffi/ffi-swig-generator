@@ -37,15 +37,25 @@ module TestLib
            :b, :uchar
     )
   end
+  class CamelCaseStruct < FFI::Struct
+    layout(
+           :i, :int,
+           :c, :char,
+           :b, :uchar
+    )
+  end
   class TestStruct3 < FFI::Struct
     layout(
            :c, :char
     )
   end
   callback(:cb, [ :string, :string ], :void)
+  callback(:cb_2, [ :string, :string ], :pointer)
+  callback(:cb_3, [ :string, CamelCaseStruct ], CamelCaseStruct)
   class TestStruct2 < FFI::Struct
     layout(
            :s, TestStruct,
+           :camel_case_struct, CamelCaseStruct,
            :s_3, TestStruct3,
            :e, :int,
            :func, :cb,
@@ -184,6 +194,9 @@ describe Generator::Function do
   end
   it 'should handle const qualifier return type' do
     Generator::Function.new(:node => (@node / 'cdecl')[16]).to_s.should == "attach_function :func_16, [  ], :string"
+  end
+  it 'should generate a function with variadic args' do
+    Generator::Function.new(:node => (@node / 'cdecl')[18]).to_s.should == "attach_function :func_18, [ :varargs ], :void"
   end
 end
 

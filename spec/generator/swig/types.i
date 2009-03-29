@@ -38,6 +38,7 @@ signed long long sll;
 signed long long int slli;
 signed short ss;
 signed short int ssi;
+size_t sizet;
 unsigned char uc;
 unsigned int ui;
 unsigned long ul;

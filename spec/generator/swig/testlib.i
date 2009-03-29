@@ -24,14 +24,23 @@ struct test_struct {
   byte b;
 };
 
+struct CamelCaseStruct {
+  int i;
+  char c;
+  byte b;
+};
+
 typedef struct {
   char c;
 } test_struct_3;
 
 typedef void (*cb)(char*, char*);
+typedef void * (*cb_2)(char*, const char *);
+typedef CamelCaseStruct (*cb_3)(char*, CamelCaseStruct);
 
 struct test_struct_2 {
   struct test_struct s;
+  CamelCaseStruct camel_case_struct;
   test_struct_3 s_3;
   enum_t e;
   cb func;

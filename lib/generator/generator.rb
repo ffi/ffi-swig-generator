@@ -31,6 +31,7 @@ module FFI
       'long long int' => ':long_long',
       'signed long long'     => ':long_long',
       'signed long long int' => ':long_long',
+      'size_t' => ':uint',
       'unsigned long long'     => ':ulong_long',
       'unsigned long long int' => ':ulong_long',
       'void' => ':void'
@@ -68,6 +69,12 @@ module FFI
       private
       def get_statement
         get_attr('decl').to_s + get_attr('type').to_s if @node
+      end
+      def decl
+        get_attr('decl').to_s
+      end
+      def type
+        get_attr('type').to_s
       end
       def is_native?
         Generator::TYPES.has_key?(@statement)
@@ -128,13 +135,13 @@ module FFI
       def struct
         if is_struct?
           @statement = Structure.camelcase(@statement.scan(/^struct\s(\w+)/).flatten[0])
-          get_type
+          # get_type
         end
       end
       def union
         if is_union?
           @statement = Union.camelcase(@statement.scan(/^union\s(\w+)/).flatten[0])
-          get_type
+          # get_type
         end
       end
       def enum
@@ -161,8 +168,6 @@ module FFI
       def initialize(params = { })
         super
         @symname = get_attr('name')
-        # @type = is_pointer? ? ':pointer' : get_attr('type')
-        # p @statement
       end
     end
     class Constant < Node
@@ -240,7 +245,14 @@ module FFI
     class Function < Type
       class Argument < Type
         def to_s
-          get_attr('type') == 'void' ? nil : super
+          case get_attr('type')
+          when 'void'
+            nil
+          when 'v(...)'
+            ':varargs'
+          else
+            super
+          end
         end
       end
       def initialize(params = { })
@@ -250,7 +262,7 @@ module FFI
       def to_s
         params = get_params(@node).inject([]) do |array, node|
           array << Argument.new(:node => node).to_s
-        end.collect { |p| "#{p}" }
+        end
         @indent_str + "attach_function :#{@symname}, [ #{params.join(', ')} ], #{get_rtype}"
       end
       private
@@ -264,18 +276,46 @@ module FFI
       end
     end
     class Callback < Type
-      def to_s
-        params = get_params.inject([]) do |array, type|
-          array << (type == 'void' ? '' : Type.new(:statement => type).to_s)
+      class Argument < Type
+        def to_s
+          get_attr('type') == 'void' ? nil : super
         end
-        @indent_str + "callback(:#{@symname}, [ #{params.join(', ')} ], #{get_rtype})"
+      end
+   #    def to_s
+#         params = get_params.inject([]) do |array, type|
+#           p type
+#           array << (type == 'void' ? '' : Type.new(:statement => type).to_s)
+#         end
+#         @indent_str + "callback(:#{@symname}, [ #{params.join(', ')} ], #{get_rtype})"
+#       end
+      def to_s
+#         params = get_params.inject([]) do |array, node|
+#           array << Argument.new(:node => node).to_s
+#         end.collect { |p| "#{p}" }
+        @indent_str + "callback(:#{@symname}, [ #{get_params.join(', ')} ], #{get_rtype})"
       end
       private
+     #  def get_params
+#         @statement.scan(/p.f\((.*)\)/).flatten[0].split(',')
+#       end
       def get_params
-        @statement.scan(/p.f\((.*)\)/).flatten[0].split(',')
+        params = (@node / './attributelist/parmlist/parm')
+        declaration = decl
+        unless params.empty?
+          result = params.inject([]) do |array, node|
+            declaration.gsub!(/#{Regexp.escape(Type.new(:node => node).get_attr('type'))}/, '')
+            array << Argument.new(:node => node).to_s
+          end
+        else
+          result = @statement.scan(/p.f\((.*)\)/).flatten[0].split(',').inject([]) do |array, type|
+            array << (type == 'void' ? '' : Type.new(:statement => type).to_s)
+          end
+        end
+        @statement = declaration + type
+        result
       end
       def get_rtype
-        Type.new(:statement => @statement.scan(/\)\.(\w+)/).flatten[0]).to_s
+        Type.new(:statement => @statement.scan(/\)\.(.+)/).flatten[0]).to_s
       end
     end
     class Parser

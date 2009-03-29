@@ -21,6 +21,7 @@ void func_14(void (*callback)(char* str));
 void func_15(void (*callback)(void));
 const char* func_16();
 const unsigned char * func_17();
+void func_18(...);
 
 
 
