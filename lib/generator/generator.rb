@@ -284,12 +284,15 @@ module FFI
     class Parser
       @indent = 2
       class << self
+        def get_attr(node, name)
+          nodes = (node / "./attributelist/attribute[@name='#{name}']")
+          nodes.first['value'] if nodes.first
+        end
         def get_verbatim(node)
-          node.xpath("./attributelist/attribute[@name='code']").first['value']
+          get_attr(node, 'code')
         end
         def is_insert_runtime?(node)
-          section = node.xpath("./attributelist/attribute[@name='section']")
-          section.first['value'] == 'runtime' if section.first
+          get_attr(node, 'section') == 'runtime'
         end
         def is_constant?(node)
           node.name == 'constant'
@@ -298,19 +301,19 @@ module FFI
           node.name == 'enum'
         end
         def is_function_decl?(node)
-          node.name == 'cdecl' and (node / "./attributelist/attribute[@name='kind']").first['value'] == 'function'
+          node.name == 'cdecl' and get_attr(node, 'kind') == 'function'
         end
         def is_struct?(node)
-          node.name == 'class' and (node / "./attributelist/attribute[@name='kind']").first['value'] == 'struct'
+          node.name == 'class' and get_attr(node, 'kind') == 'struct'
         end
         def is_union?(node)
-          node.name == 'class' and (node / "./attributelist/attribute[@name='kind']").first['value'] == 'union'
+          node.name == 'class' and get_attr(node, 'kind') == 'union'
         end        
         def is_typedef?(node)
-          node.name == 'cdecl' and (node / "./attributelist/attribute[@name='kind']").first['value'] == 'typedef'
+          node.name == 'cdecl' and get_attr(node, 'kind') == 'typedef'
         end
         def is_callback?(node)
-          (node / "./attributelist/attribute[@name='decl']").first['value'] =~ /^p\.f\(/
+          get_attr(node, 'decl') =~ /^p\.f\(/
         end
         def generate(node)
           result = ""
