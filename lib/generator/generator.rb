@@ -64,7 +64,7 @@ module FFI
         @is_pointer = 0
       end
       def to_s
-        get_type(@full_decl)
+        ffi_type_from(@full_decl)
       end
       private
       def get_full_decl
@@ -101,16 +101,16 @@ module FFI
         @full_decl[/^p.f\(/]
       end
       def native
-        get_type(Generator::TYPES[@full_decl]) if is_native?
+        ffi_type_from(Generator::TYPES[@full_decl]) if is_native?
       end
       def constant
-        get_type(@full_decl.scan(/^q\(const\)\.(.+)/).flatten[0]) if is_constant?
+        ffi_type_from(@full_decl.scan(/^q\(const\)\.(.+)/).flatten[0]) if is_constant?
       end
       def pointer
         if is_pointer?
           @is_pointer += 1
           if @full_decl.scan(/^p\.(.+)/).flatten[0]
-            get_type(@full_decl.scan(/^p\.(.+)/).flatten[0])
+            ffi_type_from(@full_decl.scan(/^p\.(.+)/).flatten[0])
           elsif @full_decl == 'char' and @is_pointer == 2
             ':string'
           else
@@ -121,7 +121,7 @@ module FFI
       def array
         if is_array?
           num = @full_decl.scan(/\w+\((\d+)\)/).flatten[0]
-          "[#{get_type(@full_decl.gsub!(/\w+\(\d+\)\./, ''))}, #{num}]"
+          "[#{ffi_type_from(@full_decl.gsub!(/\w+\(\d+\)\./, ''))}, #{num}]"
         end
       end
       def struct
@@ -131,15 +131,15 @@ module FFI
         @full_decl = Union.camelcase(@full_decl.scan(/^union\s(\w+)/).flatten[0]) if is_union?
       end
       def enum
-        get_type(Generator::TYPES['int']) if is_enum?
+        ffi_type_from(Generator::TYPES['int']) if is_enum?
       end
       def callback
         Callback.new(:node => @node).to_s if is_callback?        
       end
       def typedef
-        get_type(Generator.typedefs[@full_decl]) if Generator.typedefs.has_key?(@full_decl)
+        ffi_type_from(Generator.typedefs[@full_decl]) if Generator.typedefs.has_key?(@full_decl)
       end
-      def get_type(full_decl)
+      def ffi_type_from(full_decl)
         @full_decl = full_decl
         constant || typedef || pointer || enum || native || struct || union || array || callback || "#{full_decl}"
       end
