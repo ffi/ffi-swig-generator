@@ -60,14 +60,14 @@ module FFI
     class Type < Node
       def initialize(params = { })
         super
-        @statement = params[:statement] || get_statement
+        @full_decl = params[:declaration] || get_full_decl
         @is_pointer = 0
       end
       def to_s
-        get_type
+        get_type(@full_decl)
       end
       private
-      def get_statement
+      def get_full_decl
         get_attr('decl').to_s + get_attr('type').to_s if @node
       end
       def decl
@@ -77,48 +77,41 @@ module FFI
         get_attr('type').to_s
       end
       def is_native?
-        Generator::TYPES.has_key?(@statement)
+        Generator::TYPES.has_key?(@full_decl)
       end
       def is_pointer?
-        (@is_pointer > 0 or @statement[/^p\./]) and not is_callback?
+        (@is_pointer > 0 or @full_decl[/^p\./]) and not is_callback?
       end
       def is_enum?
-        @statement[/^enum/]
+        @full_decl[/^enum/]
       end
       def is_array?
-        @statement and @statement[/\w+\(\d+\)/]
+        @full_decl and @full_decl[/\w+\(\d+\)/]
       end
       def is_struct?
-        @statement[/^struct/]
+        @full_decl[/^struct/]
       end
       def is_union?
-        @statement[/^union/]
+        @full_decl[/^union/]
       end
       def is_constant?
-        @statement[/^q\(const\)/]
+        @full_decl[/^q\(const\)/]
       end
       def is_callback?
-        @statement[/^p.f\(/]
+        @full_decl[/^p.f\(/]
       end
       def native
-        if is_native?
-          @statement = Generator::TYPES[@statement] 
-          get_type
-        end
+        get_type(Generator::TYPES[@full_decl]) if is_native?
       end
       def constant
-        if is_constant?
-          @statement = @statement.scan(/^q\(const\)\.(.+)/).flatten[0]
-          get_type 
-        end
+        get_type(@full_decl.scan(/^q\(const\)\.(.+)/).flatten[0]) if is_constant?
       end
       def pointer
         if is_pointer?
           @is_pointer += 1
-          if @statement.scan(/^p\.(.+)/).flatten[0]
-            @statement = @statement.scan(/^p\.(.+)/).flatten[0]
-            get_type
-          elsif @statement == 'char' and @is_pointer == 2
+          if @full_decl.scan(/^p\.(.+)/).flatten[0]
+            get_type(@full_decl.scan(/^p\.(.+)/).flatten[0])
+          elsif @full_decl == 'char' and @is_pointer == 2
             ':string'
           else
             ':pointer'
@@ -127,44 +120,32 @@ module FFI
       end
       def array
         if is_array?
-          num = @statement.scan(/\w+\((\d+)\)/).flatten[0]
-          @statement.gsub!(/\w+\(\d+\)\./, '')
-          "[#{get_type}, #{num}]"
+          num = @full_decl.scan(/\w+\((\d+)\)/).flatten[0]
+          "[#{get_type(@full_decl.gsub!(/\w+\(\d+\)\./, ''))}, #{num}]"
         end
       end
       def struct
-        if is_struct?
-          @statement = Structure.camelcase(@statement.scan(/^struct\s(\w+)/).flatten[0])
-          # get_type
-        end
+        @full_decl = Structure.camelcase(@full_decl.scan(/^struct\s(\w+)/).flatten[0]) if is_struct?
       end
       def union
-        if is_union?
-          @statement = Union.camelcase(@statement.scan(/^union\s(\w+)/).flatten[0])
-          # get_type
-        end
+        @full_decl = Union.camelcase(@full_decl.scan(/^union\s(\w+)/).flatten[0]) if is_union?
       end
       def enum
-        if is_enum?
-          @statement = Generator::TYPES['int']
-          get_type
-        end
+        get_type(Generator::TYPES['int']) if is_enum?
       end
       def callback
         Callback.new(:node => @node).to_s if is_callback?        
       end
       def typedef
-        if Generator.typedefs.has_key?(@statement)
-          @statement = Generator.typedefs[@statement]
-          get_type
-        end
+        get_type(Generator.typedefs[@full_decl]) if Generator.typedefs.has_key?(@full_decl)
       end
-      def get_type
-        constant || typedef || pointer || enum || native || struct || union || array || callback || "#{@statement}"
+      def get_type(full_decl)
+        @full_decl = full_decl
+        constant || typedef || pointer || enum || native || struct || union || array || callback || "#{full_decl}"
       end
     end
     class Typedef < Type
-      attr_reader :symname, :statement
+      attr_reader :symname, :full_decl
       def initialize(params = { })
         super
         @symname = get_attr('name')
@@ -271,33 +252,15 @@ module FFI
       end
       def get_rtype
         pointer = get_attr('decl').scan(/^f\(.*\)\.(p)/).flatten[0]
-        statement = pointer ? "p.#{get_attr('type')}" : get_attr('type')
-        Type.new(:statement => statement).to_s
+        declaration = pointer ? "p.#{get_attr('type')}" : get_attr('type')
+        Type.new(:declaration => declaration).to_s
       end
     end
-    class Callback < Type
-      class Argument < Type
-        def to_s
-          get_attr('type') == 'void' ? nil : super
-        end
-      end
-   #    def to_s
-#         params = get_params.inject([]) do |array, type|
-#           p type
-#           array << (type == 'void' ? '' : Type.new(:statement => type).to_s)
-#         end
-#         @indent_str + "callback(:#{@symname}, [ #{params.join(', ')} ], #{get_rtype})"
-#       end
+    class Callback < Function
       def to_s
-#         params = get_params.inject([]) do |array, node|
-#           array << Argument.new(:node => node).to_s
-#         end.collect { |p| "#{p}" }
         @indent_str + "callback(:#{@symname}, [ #{get_params.join(', ')} ], #{get_rtype})"
       end
       private
-     #  def get_params
-#         @statement.scan(/p.f\((.*)\)/).flatten[0].split(',')
-#       end
       def get_params
         params = (@node / './attributelist/parmlist/parm')
         declaration = decl
@@ -307,15 +270,15 @@ module FFI
             array << Argument.new(:node => node).to_s
           end
         else
-          result = @statement.scan(/p.f\((.*)\)/).flatten[0].split(',').inject([]) do |array, type|
-            array << (type == 'void' ? '' : Type.new(:statement => type).to_s)
+          result = @full_decl.scan(/p.f\((.*)\)/).flatten[0].split(',').inject([]) do |array, type|
+            array << (type == 'void' ? '' : Type.new(:declaration => type).to_s)
           end
         end
-        @statement = declaration + type
+        @full_decl = declaration + type
         result
       end
       def get_rtype
-        Type.new(:statement => @statement.scan(/\)\.(.+)/).flatten[0]).to_s
+        Type.new(:declaration => @full_decl.scan(/\)\.(.+)/).flatten[0]).to_s
       end
     end
     class Parser
@@ -356,7 +319,7 @@ module FFI
               result << Constant.new(:node => node, :indent => @indent).to_s << "\n"
             elsif is_typedef?(node)
               typedef = Typedef.new(:node => node)
-              Generator.add_type(typedef.symname, typedef.statement)
+              Generator.add_type(typedef.symname, typedef.full_decl)
               if is_callback?(node)
                 cb = Callback.new(:node => node, :indent => @indent).to_s << "\n"
                 Generator.add_type(typedef.symname, ":#{typedef.symname}")
@@ -386,4 +349,3 @@ module FFI
     end
   end
 end
-
