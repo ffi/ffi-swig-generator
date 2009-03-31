@@ -60,7 +60,8 @@ module TestLib
            :e, :int,
            :func, :cb,
            :u, UnionT,
-           :callback, :cb
+           :callback, :cb,
+           :inline_callback, callback([  ], :void)
     )
   end
   attach_function :get_int, [ :pointer ], :int
@@ -187,10 +188,10 @@ describe Generator::Function do
     Generator::Function.new(:node => (@node / 'cdecl')[11]).to_s.should == "attach_function :func_11, [  ], :void"
   end
   it 'should properly generate a function that takes a callback as argument' do
-    Generator::Function.new(:node => (@node / 'cdecl')[12]).to_s.should == "attach_function :func_12, [ callback(:callback, [ :float ], :void) ], :void"
-    Generator::Function.new(:node => (@node / 'cdecl')[13]).to_s.should == "attach_function :func_13, [ callback(:callback, [ :double, :float ], :int) ], :void"
-    Generator::Function.new(:node => (@node / 'cdecl')[14]).to_s.should == "attach_function :func_14, [ callback(:callback, [ :string ], :void) ], :void"
-    Generator::Function.new(:node => (@node / 'cdecl')[15]).to_s.should == "attach_function :func_15, [ callback(:callback, [  ], :void) ], :void"
+    Generator::Function.new(:node => (@node / 'cdecl')[12]).to_s.should == "attach_function :func_12, [ callback([ :float ], :void) ], :void"
+    Generator::Function.new(:node => (@node / 'cdecl')[13]).to_s.should == "attach_function :func_13, [ callback([ :double, :float ], :int) ], :void"
+    Generator::Function.new(:node => (@node / 'cdecl')[14]).to_s.should == "attach_function :func_14, [ callback([ :string ], :void) ], :void"
+    Generator::Function.new(:node => (@node / 'cdecl')[15]).to_s.should == "attach_function :func_15, [ callback([  ], :void) ], :void"
   end
   it 'should handle const qualifier return type' do
     Generator::Function.new(:node => (@node / 'cdecl')[16]).to_s.should == "attach_function :func_16, [  ], :string"

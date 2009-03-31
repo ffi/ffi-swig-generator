@@ -134,7 +134,7 @@ module FFI
         ffi_type_from(Generator::TYPES['int']) if is_enum?
       end
       def callback
-        Callback.new(:node => @node).to_s if is_callback?        
+        Callback.new(:node => @node, :inline => true).to_s if is_callback?        
       end
       def typedef
         ffi_type_from(Generator.typedefs[@full_decl]) if Generator.typedefs.has_key?(@full_decl)
@@ -257,8 +257,16 @@ module FFI
       end
     end
     class Callback < Function
+      def initialize(params = { })
+        super(params)
+        @inline = true if params[:inline] == true
+      end
       def to_s
-        @indent_str + "callback(:#{@symname}, [ #{get_params.join(', ')} ], #{get_rtype})"
+        unless @inline
+          @indent_str + "callback(:#{@symname}, [ #{get_params.join(', ')} ], #{get_rtype})"
+        else
+          @indent_str + "callback([ #{get_params.join(', ')} ], #{get_rtype})"
+        end
       end
       private
       def get_params

@@ -46,6 +46,7 @@ struct test_struct_2 {
   cb func;
   union_t u;
   cb callback;
+  void (*inline_callback)();
 };
 
 int get_int(struct test_struct* s);
