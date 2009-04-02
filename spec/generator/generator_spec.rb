@@ -63,6 +63,49 @@ module TestLib
            :callback, :cb,
            :inline_callback, callback([  ], :void)
     )
+    def func=(cb)
+      @func = cb
+      self[:func] = @func
+    end
+    def func
+      @func
+    end
+    def callback=(cb)
+      @callback = cb
+      self[:callback] = @callback
+    end
+    def callback
+      @callback
+    end
+    def inline_callback=(cb)
+      @inline_callback = cb
+      self[:inline_callback] = @inline_callback
+    end
+    def inline_callback
+      @inline_callback
+    end
+
+  end
+  class TestStruct3 < FFI::Struct
+    layout(
+           :string, :pointer,
+           :inline_callback, callback([  ], :void)
+    )
+    def string=(str)
+      @string = FFI::MemoryPointer.from_string(str)
+      self[:string] = @string
+    end
+    def string
+      @string.get_string(0)
+    end
+    def inline_callback=(cb)
+      @inline_callback = cb
+      self[:inline_callback] = @inline_callback
+    end
+    def inline_callback
+      @inline_callback
+    end
+
   end
   attach_function :get_int, [ :pointer ], :int
   attach_function :get_char, [ :pointer ], :char
@@ -212,9 +255,17 @@ class TestStruct1 < FFI::Struct
   layout(
          :i, :int,
          :c, :char,
-         :s, :string,
+         :s, :pointer,
          :a, [:char, 5]
   )
+  def s=(str)
+    @s = FFI::MemoryPointer.from_string(str)
+    self[:s] = @s
+  end
+  def s
+    @s.get_string(0)
+  end
+
 end
 EOC
 

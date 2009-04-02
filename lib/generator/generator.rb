@@ -80,7 +80,7 @@ module FFI
         Generator::TYPES.has_key?(@full_decl)
       end
       def is_pointer?
-        (@is_pointer > 0 or @full_decl[/^p\./]) and not is_callback?
+        (@is_pointer > 0 or @full_decl[/^p\./]) and not is_inline_callback?
       end
       def is_enum?
         @full_decl[/^enum/]
@@ -98,6 +98,9 @@ module FFI
         @full_decl[/^q\(const\)/]
       end
       def is_callback?
+        @full_decl[/^callback/]
+      end
+      def is_inline_callback?
         @full_decl[/^p.f\(/]
       end
       def native
@@ -134,14 +137,17 @@ module FFI
         ffi_type_from(Generator::TYPES['int']) if is_enum?
       end
       def callback
-        Callback.new(:node => @node, :inline => true).to_s if is_callback?        
+        @full_decl = ":#{@full_decl.scan(/^callback\s(\w+)/).flatten[0]}" if is_callback?
+      end
+      def inline_callback
+        Callback.new(:node => @node, :inline => true).to_s if is_inline_callback?        
       end
       def typedef
         ffi_type_from(Generator.typedefs[@full_decl]) if Generator.typedefs.has_key?(@full_decl)
       end
       def ffi_type_from(full_decl)
         @full_decl = full_decl
-        constant || typedef || pointer || enum || native || struct || union || array || callback || "#{full_decl}"
+        constant || typedef || pointer || enum || native || struct || union || array || inline_callback || callback || "#{full_decl}"
       end
     end
     class Typedef < Type
@@ -194,6 +200,30 @@ module FFI
       end
     end
     class Structure < Node
+      def self.string_setter_getter(field_name, indent = 0)
+        result = <<-code
+def #{field_name}=(str)
+  @#{field_name} = FFI::MemoryPointer.from_string(str)
+  self[:#{field_name}] = @#{field_name}
+end
+def #{field_name}
+  @#{field_name}.get_string(0)
+end
+code
+      result.map { |line| ' ' * indent + line }.join
+      end
+      def self.callback_setter_getter(field_name, indent = 0)
+        result = <<-code
+def #{field_name}=(cb)
+  @#{field_name} = cb
+  self[:#{field_name}] = @#{field_name}
+end
+def #{field_name}
+  @#{field_name}
+end
+code
+      result.map { |line| ' ' * indent + line }.join
+      end
       def self.camelcase(name)
         name.gsub(/^\w|\_\w/) { |c| c.upcase }.delete('_')
       end
@@ -205,7 +235,7 @@ module FFI
         fields_str = fields.inject("") do |str, f|
           str << @indent_str + ' ' * 9 << f.join(', ') << ",\n"
         end
-        code = klass_string + @indent_str + "  layout(\n" + fields_str.chomp.chomp(',') + "\n" + @indent_str + "  )\n" + @indent_str + "end\n"
+        code = klass_string + @indent_str + "  layout(\n" + fields_str.chomp.chomp(',') + "\n" + @indent_str + "  )\n" + accessors + @indent_str + "end\n"
       end
       private
       def klass_string
@@ -213,8 +243,24 @@ module FFI
       end
       def fields
         (@node / 'cdecl').inject([]) do |array, field|
-          array << [":#{Node.new(:node => field).symname}", "#{Type.new(:node => field)}"]
+          type = Type.new(:node => field).to_s
+          array << [":#{Node.new(:node => field).symname}", type == ':string' ? ':pointer' : type]
         end
+      end
+      def accessors
+        result = ""
+        fields = (@node / 'cdecl').map do |field|
+          [Node.new(:node => field).symname, "#{Type.new(:node => field)}"]
+        end
+        fields.each do |field|
+          if field[1] == ':string'
+            result << self.class.string_setter_getter(field[0], @indent + 2)
+          elsif field[1] =~ /^callback/ or Generator.typedefs[field[1].delete(':')] =~ /^callback/
+            result << self.class.callback_setter_getter(field[0], @indent + 2)
+          end
+        end
+        result += "\n" unless result.empty?
+        result
       end
     end
     class Union < Structure
@@ -333,7 +379,7 @@ module FFI
               Generator.add_type(typedef.symname, typedef.full_decl)
               if is_callback?(node)
                 cb = Callback.new(:node => node, :indent => @indent).to_s << "\n"
-                Generator.add_type(typedef.symname, ":#{typedef.symname}")
+                Generator.add_type(typedef.symname, "callback #{typedef.symname}")
                 result << cb.to_s
               end
             elsif is_enum?(node)

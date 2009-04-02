@@ -49,6 +49,13 @@ struct test_struct_2 {
   void (*inline_callback)();
 };
 
+// struct with getter/setter method for strings and callbacks
+
+struct test_struct_3 {
+  char* string;
+  void (*inline_callback)();
+};
+
 int get_int(struct test_struct* s);
 char get_char(struct test_struct* s);
 int func_with_enum(enum e_1 e);
