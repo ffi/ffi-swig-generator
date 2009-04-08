@@ -425,9 +425,11 @@ code
           end
           if nested_node
             if get_attr(nested_node, 'kind') == 'struct'
-              result << Structure.new(:node => nested_node, :indent => @indent).to_s
+              s = Structure.new(:node => nested_node, :indent => @indent)
+              result << (Generator.nested_structure.has_key?(s.symname) ? fixme(s.to_s, NestedStructureNotSupported) : s.to_s)
             else
-              result << Union.new(:node => nested_node, :indent => @indent).to_s
+              u = Union.new(:node => nested_node, :indent => @indent)
+              result << (Generator.nested_structure.has_key?(u.symname) ? fixme(u.to_s, NestedStructureNotSupported) : u.to_s)
             end
           end
           result

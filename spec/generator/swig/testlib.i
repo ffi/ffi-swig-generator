@@ -75,6 +75,7 @@ struct test_struct_5 {
       long l;
       long long ll;
     } union_field;
+    float f;
   } big_union_field;
   char c;
 };

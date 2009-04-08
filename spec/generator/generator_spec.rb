@@ -131,14 +131,17 @@ module TestLib
            :ll, :long_long
     )
   end
-  class TestStruct5BigUnionField < FFI::Union
-    layout(
-           :union_field, TestStruct5BigUnionFieldUnionField,
-           :nested_struct_field_3, TestStruct5BigUnionFieldNestedStructField3,
-           :nested_struct_field_2, TestStruct5BigUnionFieldNestedStructField2,
-           :nested_struct_field_1, TestStruct5BigUnionFieldNestedStructField1
-    )
-  end
+# FIXME: Nested structures are not correctly supported at the moment.
+# Please check the order of the declarations in the structure below.
+#   class TestStruct5BigUnionField < FFI::Union
+#     layout(
+#            :f, :float,
+#            :union_field, TestStruct5BigUnionFieldUnionField,
+#            :nested_struct_field_3, TestStruct5BigUnionFieldNestedStructField3,
+#            :nested_struct_field_2, TestStruct5BigUnionFieldNestedStructField2,
+#            :nested_struct_field_1, TestStruct5BigUnionFieldNestedStructField1
+#     )
+#   end
 # FIXME: Nested structures are not correctly supported at the moment.
 # Please check the order of the declarations in the structure below.
 #   class TestStruct5 < FFI::Struct
