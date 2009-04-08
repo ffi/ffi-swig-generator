@@ -51,17 +51,33 @@ struct test_struct_2 {
 
 // struct with getter/setter method for strings and callbacks
 
-struct test_struct_4 {
+struct _test_struct_4 {
   char* string;
   void (*inline_callback)();
 };
 
-/* struct test_struct_5 { */
-/*   struct { */
-/*     int a; */
-/*     int b; */
-/*   } nested_struct_field; */
-/* }; */
+struct test_struct_5 {
+  int i;
+  union {
+    struct {
+      int a;
+      int b;
+    } nested_struct_field_1;
+    struct {
+      int c;
+      int d;
+    } nested_struct_field_2;
+    struct {
+      int e;
+      int f;
+    } nested_struct_field_3;
+    union {
+      long l;
+      long long ll;
+    } union_field;
+  } big_union_field;
+  char c;
+};
 
 int get_int(struct test_struct* s);
 char get_char(struct test_struct* s);

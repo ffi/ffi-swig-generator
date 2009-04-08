@@ -107,6 +107,47 @@ module TestLib
     end
 
   end
+  class TestStruct5BigUnionFieldNestedStructField1 < FFI::Struct
+    layout(
+           :a, :int,
+           :b, :int
+    )
+  end
+  class TestStruct5BigUnionFieldNestedStructField2 < FFI::Struct
+    layout(
+           :c, :int,
+           :d, :int
+    )
+  end
+  class TestStruct5BigUnionFieldNestedStructField3 < FFI::Struct
+    layout(
+           :e, :int,
+           :f, :int
+    )
+  end
+  class TestStruct5BigUnionFieldUnionField < FFI::Union
+    layout(
+           :l, :long,
+           :ll, :long_long
+    )
+  end
+  class TestStruct5BigUnionField < FFI::Union
+    layout(
+           :union_field, TestStruct5BigUnionFieldUnionField,
+           :nested_struct_field_3, TestStruct5BigUnionFieldNestedStructField3,
+           :nested_struct_field_2, TestStruct5BigUnionFieldNestedStructField2,
+           :nested_struct_field_1, TestStruct5BigUnionFieldNestedStructField1
+    )
+  end
+# FIXME: Nested structures are not correctly supported at the moment.
+# Please check the order of the declarations in the structure below.
+#   class TestStruct5 < FFI::Struct
+#     layout(
+#            :i, :int,
+#            :c, :char,
+#            :big_union_field, TestStruct5BigUnionField
+#     )
+#   end
   attach_function :get_int, [ :pointer ], :int
   attach_function :get_char, [ :pointer ], :char
   attach_function :func_with_enum, [ :int ], :int

@@ -3,7 +3,14 @@ require 'nokogiri'
 
 module FFI
   module Generator
+    NestedStructureNotSupported =<<EOM
+Nested structures are not correctly supported at the moment.
+Please check the order of the declarations in the structure below.
+EOM
     @typedefs = {}
+    @nested_type = {}
+    @nested_structure = {}
+    @ignored = []
     TYPES = { 
       'char' => ':char',
       'double' => ':double',
@@ -37,9 +44,13 @@ module FFI
       'void' => ':void'
     }     
     class << self
-      attr_reader :typedefs
+      attr_reader :typedefs, :nested_type, :nested_structure, :ignored
+      attr_reader :messages
       def add_type(ctype, rtype)
         @typedefs[ctype] = rtype
+      end
+      def add_nested_structure(symname, id)
+        (Generator.nested_structure[Generator.nested_type[symname]] ||= []) << id
       end
     end
     class Node
@@ -58,10 +69,50 @@ module FFI
       end
     end
     class Type < Node
+      class Declaration
+        def initialize(declaration)
+          @full_decl = declaration
+        end
+        def is_native?
+          Generator::TYPES.has_key?(@full_decl)
+        end
+        def is_pointer?
+          @full_decl[/^p\./] and not is_inline_callback?
+        end
+        def is_enum?
+          @full_decl[/^enum/]
+        end
+        def is_array?
+          @full_decl and @full_decl[/\w+\(\d+\)/]
+        end
+        def is_struct?
+          @full_decl[/^struct/]
+        end
+        def is_union?
+          @full_decl[/^union/]
+        end
+        def is_constant?
+          @full_decl[/^q\(const\)/]
+        end
+        def is_volatile?
+          @full_decl[/^q\(volatile\)/]
+        end
+        def is_callback?
+          @full_decl[/^callback/]
+        end
+        def is_inline_callback?
+          @full_decl[/^p.f\(/]
+        end
+      end
       def initialize(params = { })
         super
         @full_decl = params[:declaration] || get_full_decl
+        @declaration = Declaration.new(@full_decl)
         @is_pointer = 0
+        Generator.nested_type[get_attr('type')] = get_attr('nested') if is_nested_type? 
+      end
+      def is_nested_type?
+        get_attr('nested')
       end
       def to_s
         ffi_type_from(@full_decl)
@@ -76,47 +127,17 @@ module FFI
       def type
         get_attr('type').to_s
       end
-      def is_native?
-        Generator::TYPES.has_key?(@full_decl)
-      end
-      def is_pointer?
-        (@is_pointer > 0 or @full_decl[/^p\./]) and not is_inline_callback?
-      end
-      def is_enum?
-        @full_decl[/^enum/]
-      end
-      def is_array?
-        @full_decl and @full_decl[/\w+\(\d+\)/]
-      end
-      def is_struct?
-        @full_decl[/^struct/]
-      end
-      def is_union?
-        @full_decl[/^union/]
-      end
-      def is_constant?
-        @full_decl[/^q\(const\)/]
-      end
-      def is_volatile?
-        @full_decl[/^q\(volatile\)/]
-      end
-      def is_callback?
-        @full_decl[/^callback/]
-      end
-      def is_inline_callback?
-        @full_decl[/^p.f\(/]
-      end
       def native
-        ffi_type_from(Generator::TYPES[@full_decl]) if is_native?
+        ffi_type_from(Generator::TYPES[@full_decl]) if @declaration.is_native?
       end
       def constant
-        ffi_type_from(@full_decl.scan(/^q\(const\)\.(.+)/).flatten[0]) if is_constant?
+        ffi_type_from(@full_decl.scan(/^q\(const\)\.(.+)/).flatten[0]) if @declaration.is_constant?
       end
       def volatile
-        ffi_type_from(@full_decl.scan(/^q\(volatile\)\.(.+)/).flatten[0]) if is_volatile?
+        ffi_type_from(@full_decl.scan(/^q\(volatile\)\.(.+)/).flatten[0]) if @declaration.is_volatile?
       end
       def pointer
-        if is_pointer?
+        if @declaration.is_pointer? or @is_pointer > 0
           @is_pointer += 1
           if @full_decl.scan(/^p\.(.+)/).flatten[0]
             ffi_type_from(@full_decl.scan(/^p\.(.+)/).flatten[0])
@@ -128,32 +149,47 @@ module FFI
         end        
       end
       def array
-        if is_array?
+        if @declaration.is_array?
           num = @full_decl.scan(/\w+\((\d+)\)/).flatten[0]
           "[#{ffi_type_from(@full_decl.gsub!(/\w+\(\d+\)\./, ''))}, #{num}]"
         end
       end
       def struct
-        @full_decl = Structure.camelcase(@full_decl.scan(/^struct\s(\w+)/).flatten[0]) if is_struct?
+        Structure.camelcase(@full_decl.scan(/^struct\s(\w+)/).flatten[0]) if @declaration.is_struct?
       end
       def union
-        @full_decl = Union.camelcase(@full_decl.scan(/^union\s(\w+)/).flatten[0]) if is_union?
+        Union.camelcase(@full_decl.scan(/^union\s(\w+)/).flatten[0]) if @declaration.is_union?
       end
       def enum
-        ffi_type_from(Generator::TYPES['int']) if is_enum?
+        ffi_type_from(Generator::TYPES['int']) if @declaration.is_enum?
       end
       def callback
-        @full_decl = ":#{@full_decl.scan(/^callback\s(\w+)/).flatten[0]}" if is_callback?
+        ":#{@full_decl.scan(/^callback\s(\w+)/).flatten[0]}" if @declaration.is_callback?
       end
       def inline_callback
-        Callback.new(:node => @node, :inline => true).to_s if is_inline_callback?        
+        Callback.new(:node => @node, :inline => true).to_s if @declaration.is_inline_callback?        
       end
       def typedef
         ffi_type_from(Generator.typedefs[@full_decl]) if Generator.typedefs.has_key?(@full_decl)
       end
+      def undefined(type)
+        "#{type}"
+      end
       def ffi_type_from(full_decl)
         @full_decl = full_decl
-        constant || volatile || typedef || pointer || enum || native || struct || union || array || inline_callback || callback || "#{full_decl}"
+        @declaration = Declaration.new(full_decl)
+        constant             || \
+        volatile             || \
+        typedef              || \
+        pointer              || \
+        enum                 || \
+        native               || \
+        struct               || \
+        union                || \
+        array                || \
+        inline_callback      || \
+        callback             || \
+        undefined(full_decl)
       end
     end
     class Typedef < Type
@@ -231,7 +267,7 @@ code
       result.map { |line| ' ' * indent + line }.join
       end
       def self.camelcase(name)
-        name.gsub(/^\w|\_\w/) { |c| c.upcase }.delete('_')
+        name.gsub(/^_?\w|\_\w/) { |c| c.upcase }.delete('_')
       end
       def initialize(params = { })
         super
@@ -249,7 +285,8 @@ code
       end
       def fields
         (@node / 'cdecl').inject([]) do |array, field|
-          type = Type.new(:node => field).to_s
+          type_node = Type.new(:node => field).to_s
+          type = type_node.to_s
           array << [":#{Node.new(:node => field).symname}", type == ':string' ? ':pointer' : type]
         end
       end
@@ -348,6 +385,9 @@ code
           nodes = (node / "./attributelist/attribute[@name='#{name}']")
           nodes.first['value'] if nodes.first
         end
+        def get_id(node)
+          node.id
+        end
         def get_verbatim(node)
           get_attr(node, 'code')
         end
@@ -375,7 +415,51 @@ code
         def is_callback?(node)
           get_attr(node, 'decl') =~ /^p\.f\(/
         end
-        def generate(node)
+        def find_nested_struct(node, id)
+          result = ""
+          nested_node = (node.parent / "class[@id='#{id}']").first
+          if Generator.nested_structure.has_key?(get_attr(nested_node, 'name'))
+            Generator.nested_structure[get_attr(nested_node, 'name')].reverse.each do |id|
+              result << find_nested_struct(nested_node, id)
+            end
+          end
+          if nested_node
+            if get_attr(nested_node, 'kind') == 'struct'
+              result << Structure.new(:node => nested_node, :indent => @indent).to_s
+            else
+              result << Union.new(:node => nested_node, :indent => @indent).to_s
+            end
+          end
+          result
+        end
+        def fixme(code, message)
+          message = comment('FIXME: ' + message)
+          message << comment(code)
+        end
+        def comment(code)
+          code.split(/\n/).map { |line| "# #{line}" }.join("\n") << "\n"
+        end
+        def has_nested_structures?(node, symname)
+          Generator.nested_structure[symname] and not Generator.nested_structure[symname].empty?
+        end
+        def prepend_nested_structures(node, symname)
+          result = ""
+          if has_nested_structures?(node, symname)
+            result = Generator.nested_structure[symname].reverse.inject("") do |result, nested_id|
+              result << find_nested_struct(node, nested_id)
+            end
+            Generator.nested_structure[symname].clear
+          end
+          result          
+        end
+        def handle_nested_structure(node, symname)
+          if Generator.nested_type[symname]
+            Generator.add_nested_structure(symname, node.attributes['id'])
+            Generator.ignored << node.attributes['id']
+          end
+          prepend_nested_structures(node, symname)
+        end
+        def pass(node)
           result = ""
           node.traverse do |node|
             if is_constant?(node)
@@ -395,11 +479,17 @@ code
             elsif is_struct?(node)
               s = Structure.new(:node => node, :indent => @indent)
               Generator.add_type(s.symname, "struct #{s.symname}")
-              result << s.to_s
+              unless Generator.ignored.include? node.attributes['id']
+                nested = handle_nested_structure(node, s.symname)
+                result << (nested.empty? ? s.to_s : nested << fixme(s.to_s, NestedStructureNotSupported))
+              end
             elsif is_union?(node)
               s = Union.new(:node => node, :indent => @indent)
               Generator.add_type(s.symname, "union #{s.symname}")
-              result << s.to_s
+              unless Generator.ignored.include? node.attributes['id']
+                nested = handle_nested_structure(node, s.symname)
+                result << (nested.empty? ? s.to_s : nested << fixme(s.to_s, NestedStructureNotSupported))
+              end
             elsif is_function_decl?(node)
               result << Function.new(:node => node, :indent => @indent).to_s << "\n"
             elsif node.name == 'insert' and not is_insert_runtime?(node) and not node.parent.name == 'class'
@@ -407,6 +497,10 @@ code
             end       
           end
           result
+        end
+        def generate(node)
+          pass(node)
+          pass(node) unless Generator.nested_type.empty?
         end
       end
     end
