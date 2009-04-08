@@ -51,10 +51,17 @@ struct test_struct_2 {
 
 // struct with getter/setter method for strings and callbacks
 
-struct test_struct_3 {
+struct test_struct_4 {
   char* string;
   void (*inline_callback)();
 };
+
+/* struct test_struct_5 { */
+/*   struct { */
+/*     int a; */
+/*     int b; */
+/*   } nested_struct_field; */
+/* }; */
 
 int get_int(struct test_struct* s);
 char get_char(struct test_struct* s);

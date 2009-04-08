@@ -97,6 +97,9 @@ module FFI
       def is_constant?
         @full_decl[/^q\(const\)/]
       end
+      def is_volatile?
+        @full_decl[/^q\(volatile\)/]
+      end
       def is_callback?
         @full_decl[/^callback/]
       end
@@ -108,6 +111,9 @@ module FFI
       end
       def constant
         ffi_type_from(@full_decl.scan(/^q\(const\)\.(.+)/).flatten[0]) if is_constant?
+      end
+      def volatile
+        ffi_type_from(@full_decl.scan(/^q\(volatile\)\.(.+)/).flatten[0]) if is_volatile?
       end
       def pointer
         if is_pointer?
@@ -147,7 +153,7 @@ module FFI
       end
       def ffi_type_from(full_decl)
         @full_decl = full_decl
-        constant || typedef || pointer || enum || native || struct || union || array || inline_callback || callback || "#{full_decl}"
+        constant || volatile || typedef || pointer || enum || native || struct || union || array || inline_callback || callback || "#{full_decl}"
       end
     end
     class Typedef < Type
@@ -396,7 +402,7 @@ code
               result << s.to_s
             elsif is_function_decl?(node)
               result << Function.new(:node => node, :indent => @indent).to_s << "\n"
-            elsif node.name == 'insert' and not is_insert_runtime?(node)
+            elsif node.name == 'insert' and not is_insert_runtime?(node) and not node.parent.name == 'class'
               result << get_verbatim(node)
             end       
           end

@@ -86,7 +86,7 @@ module TestLib
     end
 
   end
-  class TestStruct3 < FFI::Struct
+  class TestStruct4 < FFI::Struct
     layout(
            :string, :pointer,
            :inline_callback, callback([  ], :void)
@@ -241,6 +241,9 @@ describe Generator::Function do
   end
   it 'should generate a function with variadic args' do
     Generator::Function.new(:node => (@node / 'cdecl')[18]).to_s.should == "attach_function :func_18, [ :varargs ], :void"
+  end
+  it 'should generate a function with volatile args' do
+    Generator::Function.new(:node => (@node / 'cdecl')[19]).to_s.should == "attach_function :func_19, [ :int ], :void"
   end
 end
 
