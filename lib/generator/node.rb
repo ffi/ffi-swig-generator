@@ -376,7 +376,7 @@ code
         result
       end
       def get_rtype
-        Type.new(:declaration => @full_decl.scan(/f\([a-zA-z0-9,.\(\)]*\)\.([a-zA-Z0-9\.,\(\)]+)/).flatten[0]).to_s
+        Type.new(:declaration => @full_decl.scan(/f\([a-zA-z0-9,.\s\(\)]*\)\.([a-zA-Z0-9\.,\s\(\)]+)/).flatten[0]).to_s
       end
     end
   end
