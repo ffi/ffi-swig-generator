@@ -22,7 +22,7 @@ EOU
           process_args
           if ARGV.size == 2
             File.open(ARGV[1], 'w') do |file|
-              file << FFI::Generator::Parser.generate(Nokogiri::XML(File.open(ARGV[0])))
+              file << FFI::Generator::Parser.new.generate(Nokogiri::XML(File.open(ARGV[0])))
             end
           else
             help

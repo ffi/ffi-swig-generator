@@ -1,7 +1,7 @@
 module FFI
   module Generator
     # :stopdoc:
-    VERSION = '0.2.1'
+    VERSION = '0.3.0'
     LIBPATH = ::File.expand_path(::File.dirname(__FILE__)) + ::File::SEPARATOR
     PATH = ::File.dirname(LIBPATH) + ::File::SEPARATOR
     # :startdoc:
@@ -43,6 +43,7 @@ module FFI
   end
 end
 
+require 'rubygems'
 FFI::Generator.require_all_libs_relative_to(__FILE__, 'generator')
 
 # EOF

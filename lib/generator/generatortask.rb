@@ -19,7 +19,7 @@ module FFI
           `swig -xml #{xml_fn} #{fn}`
           puts "Generating #{output_fn} from #{xml_fn}..."
           File.open(output_fn, 'w') do |file|
-            file << Parser.generate(Nokogiri::XML(File.open(xml_fn)))
+            file << Parser.new.generate(Nokogiri::XML(File.open(xml_fn)))
           end
         end
       end

@@ -24,4 +24,10 @@ def remove_xml
   FileUtils.rm(Dir.glob('spec/generator/swig/*.xml'))
 end
 
+share_examples_for "All specs" do
+  after :all do
+    remove_xml
+  end
+end
+
 # EOF
