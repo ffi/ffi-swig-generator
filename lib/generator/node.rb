@@ -196,7 +196,17 @@ module FFI
         @name, @value = get_attr('sym_name'), get_attr('value')
       end
       def to_s
-        @indent_str + "#{@name} = #{@value}"        
+        @indent_str + "#{@name} = #{sanitize!(@value)}"        
+      end
+      private
+      def sanitize!(value)
+        if @value.match(/\d+U$/) or @value.match(/\d+L$/)
+          result = value.chop
+        elsif @value.match(/\d+UL$/)
+          result = @value.chop.chop
+        else
+          result = @value
+        end
       end
     end
     class Enum < Node
@@ -366,7 +376,7 @@ code
         result
       end
       def get_rtype
-        Type.new(:declaration => @full_decl.scan(/f\([a-zA-z,.\(\)]*\)\.([a-zA-Z\.,\(\)]+)/).flatten[0]).to_s
+        Type.new(:declaration => @full_decl.scan(/f\([a-zA-z0-9,.\(\)]*\)\.([a-zA-Z0-9\.,\(\)]+)/).flatten[0]).to_s
       end
     end
   end
