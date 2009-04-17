@@ -34,16 +34,6 @@ module FFI
       'unsigned long long int' => ':ulong_long',
       'void' => ':void'
     }     
-    class << self
-      attr_reader :typedefs, :nested_type, :nested_structure, :ignored
-      attr_reader :messages
-      def add_type(ctype, rtype)
-        @typedefs[ctype] = rtype
-      end
-      def add_nested_structure(symname, id)
-        (Generator.nested_structure[Generator.nested_type[symname]] ||= []) << id
-      end
-    end
     class Node
       attr_reader :symname
       def initialize(params = { })
@@ -60,6 +50,7 @@ module FFI
       end
     end
     class Type < Node
+      attr_reader :full_decl
       class Declaration
         def initialize(declaration)
           @full_decl = declaration
@@ -97,13 +88,11 @@ module FFI
       end
       def initialize(params = { })
         super
-        @full_decl = params[:declaration] || get_full_decl
+        params = { :declaration => get_full_decl, :typedefs => { } }.merge(params)
+        @full_decl = params[:declaration]
+        @typedefs = params[:typedefs] || { }
         @declaration = Declaration.new(@full_decl)
         @is_pointer = 0
-        Generator.nested_type[get_attr('type')] = get_attr('nested') if is_nested_type? 
-      end
-      def is_nested_type?
-        get_attr('nested')
       end
       def to_s
         ffi_type_from(@full_decl)
@@ -158,10 +147,10 @@ module FFI
         ":#{@full_decl.scan(/^callback\s(\w+)/).flatten[0]}" if @declaration.is_callback?
       end
       def inline_callback
-        Callback.new(:node => @node, :inline => true).to_s if @declaration.is_inline_callback?        
+        Callback.new(:node => @node, :inline => true, :typedefs => @typedefs).to_s if @declaration.is_inline_callback?        
       end
       def typedef
-        ffi_type_from(Generator.typedefs[@full_decl]) if Generator.typedefs.has_key?(@full_decl)
+        ffi_type_from(@typedefs[@full_decl]) if @typedefs.has_key?(@full_decl)
       end
       def undefined(type)
         "#{type}"
@@ -181,13 +170,6 @@ module FFI
         inline_callback      || \
         callback             || \
         undefined(full_decl)
-      end
-    end
-    class Typedef < Type
-      attr_reader :symname, :full_decl
-      def initialize(params = { })
-        super
-        @symname = get_attr('name')
       end
     end
     class Constant < Node
@@ -242,8 +224,8 @@ module FFI
         @node / './enumitem'
       end
     end
-    class Structure < Node
-      def self.string_setter_getter(field_name, indent = 0)
+    class Structure < Type
+      def self.string_accessors(field_name, indent = 0)
         result = <<-code
 def #{field_name}=(str)
   @#{field_name} = FFI::MemoryPointer.from_string(str)
@@ -255,7 +237,7 @@ end
 code
       result.map { |line| ' ' * indent + line }.join
       end
-      def self.callback_setter_getter(field_name, indent = 0)
+      def self.callback_accessors(field_name, indent = 0)
         result = <<-code
 def #{field_name}=(cb)
   @#{field_name} = cb
@@ -286,7 +268,7 @@ code
       end
       def fields
         (@node / 'cdecl').inject([]) do |array, field|
-          type_node = Type.new(:node => field).to_s
+          type_node = Type.new(:node => field, :typedefs => @typedefs).to_s
           type = type_node.to_s
           array << [":#{Node.new(:node => field).symname}", type == ':string' ? ':pointer' : type]
         end
@@ -294,13 +276,13 @@ code
       def accessors
         result = ""
         fields = (@node / 'cdecl').map do |field|
-          [Node.new(:node => field).symname, "#{Type.new(:node => field)}"]
+          [Node.new(:node => field).symname, "#{Type.new(:node => field, :typedefs => @typedefs)}"]
         end
         fields.each do |field|
           if field[1] == ':string'
-            result << self.class.string_setter_getter(field[0], @indent + 2)
-          elsif field[1] =~ /^callback/ or Generator.typedefs[field[1].delete(':')] =~ /^callback/
-            result << self.class.callback_setter_getter(field[0], @indent + 2)
+            result << self.class.string_accessors(field[0], @indent + 2)
+          elsif field[1] =~ /^callback/ or @typedefs[field[1].delete(':')] =~ /^callback/
+            result << self.class.callback_accessors(field[0], @indent + 2)
           end
         end
         result += "\n" unless result.empty?
@@ -332,7 +314,7 @@ code
       end
       def to_s
         params = get_params(@node).inject([]) do |array, node|
-          array << Argument.new(:node => node).to_s
+          array << Argument.new(:node => node, :typedefs => @typedefs).to_s
         end
         @indent_str + "attach_function :#{@symname}, [ #{params.join(', ')} ], #{get_rtype}"
       end
@@ -343,7 +325,7 @@ code
       def get_rtype
         pointer = get_attr('decl').scan(/^f\(.*\)\.(p)/).flatten[0]
         declaration = pointer ? "p.#{get_attr('type')}" : get_attr('type')
-        Type.new(:declaration => declaration).to_s
+        Type.new(:declaration => declaration, :typedefs => @typedefs).to_s
       end
     end
     class Callback < Function
@@ -364,19 +346,19 @@ code
         declaration = decl
         unless params.empty?
           result = params.inject([]) do |array, node|
-            declaration.gsub!(/#{Regexp.escape(Type.new(:node => node).get_attr('type'))}/, '')
-            array << Argument.new(:node => node).to_s
+            declaration.gsub!(/#{Regexp.escape(Type.new(:node => node, :typedefs => @typedefs).get_attr('type'))}/, '')
+            array << Argument.new(:node => node, :typedefs => @typedefs).to_s
           end
         else
           result = @full_decl.scan(/p.f\((.*)\)/).flatten[0].split(',').inject([]) do |array, type|
-            array << (type == 'void' ? '' : Type.new(:declaration => type).to_s)
+            array << (type == 'void' ? '' : Type.new(:declaration => type, :typedefs => @typedefs).to_s)
           end
         end
         @full_decl = declaration + type
         result
       end
       def get_rtype
-        Type.new(:declaration => @full_decl.scan(/f\([a-zA-z0-9,.\s\(\)]*\)\.([a-zA-Z0-9\.,\s\(\)]+)/).flatten[0]).to_s
+        Type.new(:declaration => @full_decl.scan(/f\([a-zA-z0-9,.\s\(\)]*\)\.([a-zA-Z0-9\.,\s\(\)]+)/).flatten[0], :typedefs => @typedefs).to_s
       end
     end
   end

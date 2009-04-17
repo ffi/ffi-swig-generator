@@ -22,8 +22,15 @@ module FFI
           puts "Generating #{xml_fn} from #{fn} using SWIG..."
           `swig -xml #{xml_fn} #{fn}`
           puts "Generating #{output_fn} from #{xml_fn}..."
+          parser = Parser.new
+          config_fn = File.basename(fn, File.extname(fn))
+          config_dir = File.dirname(fn)
+          if File.exists?(File.join(config_dir, "#{config_fn}.rb"))
+            puts "Using configuration from #{config_fn}..."
+            parser.load_config(File.join(config_dir, "#{config_fn}.rb"))
+          end
           File.open(output_fn, 'w') do |file|
-            file << Parser.new.generate(Nokogiri::XML(File.open(xml_fn)))
+            file << parser.generate(Nokogiri::XML(File.open(xml_fn)))
           end
         end
       end
