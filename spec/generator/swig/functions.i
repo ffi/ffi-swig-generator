@@ -24,6 +24,7 @@ const unsigned char * func_17();
 void func_18(...);
 volatile void func_19(volatile int value);
 void func_20(void *p1, void (*callback)(const char* str, void *p2, void *p3 ), void *p4);
+void func_21(void *p1, void (*callback)(const unsigned char uc, void *p2, void *p3 ), void *p4);
 
 
 

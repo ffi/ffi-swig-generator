@@ -1,3 +1,11 @@
+class Scenario1
+
+class << self
+
+def interface_dir
+  '.'
+end
+
 def interface_template
 <<-EOF
 %module testlib
@@ -95,9 +103,55 @@ end
 
 def rakefile_template
 <<-EOF
+require '../lib/ffi-swig-generator'
+
+FFI::Generator::Task.new
+EOF
+end
+
+end
+
+end
+
+class Scenario2 < Scenario1
+  
+class << self
+
+def interface_dir
+  'interfaces'
+end
+
+def rakefile_template
+<<-EOF
 require 'rubygems'
 require 'ffi-swig-generator'
 
 FFI::Generator::Task.new :input_fn => 'interfaces/*.i', :output_dir => 'generated/'
+
 EOF
+end
+
+end
+
+end
+
+class Scenario3 < Scenario2
+  
+class << self
+
+def rakefile_template
+<<-EOF
+require 'rubygems'
+require '../lib/ffi-swig-generator'
+
+FFI::Generator::Task.new do |task|
+  task.input_fn = 'interfaces/*.i'
+  task.output_dir = 'generated/'
+end
+
+EOF
+end
+
+end
+
 end

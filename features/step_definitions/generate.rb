@@ -3,19 +3,15 @@ Given /^we are in a project directory$/ do
   Dir.chdir('tmp')
 end
 
-Given /^an interfaces directory exists$/ do
-  FileUtils.mkdir_p('interfaces')
-end
-
-Given /^an interface file named 'interface\.i' exists$/ do
-  File.open('interfaces/interface.i', 'w') do |file|
-    file << interface_template
+Given /^the project directory is configured for the '(.+)'$/ do |mod|
+  scenario = eval(mod)
+  interface_dir = scenario.interface_dir
+  FileUtils.mkdir interface_dir unless File.exists?(interface_dir)
+  File.open(File.join(interface_dir, 'interface.i'), 'w') do |file|
+    file << scenario.interface_template
   end
-end
-
-Given /^a Rakefile exists$/ do
   File.open('Rakefile', 'w') do |file|
-    file << rakefile_template
+    file << scenario.rakefile_template
   end  
 end
 
@@ -28,12 +24,12 @@ Then /^rake task 'ffi:generate' succeeded$/ do
   @result.should be_true
 end
 
-Then /^the file 'interface_wrap\.rb' is created$/ do
-  File.exists?('generated/interface_wrap.rb').should be_true
+Then /^the file '(.+)' is created/ do |fn|
+  File.exists?(fn).should be_true
 end
 
-Then /^the file 'interface_wrap\.rb' contains ffi glue code$/ do
-  File.read('generated/interface_wrap.rb').should == interface_wrap_result
+Then /^the file '(.+)' contains ffi glue code$/ do |fn|
+  File.read(fn).should == interface_wrap_result
 end
 
 Then /^the tmp directory is removed$/ do

@@ -3,8 +3,12 @@ require 'rake/tasklib'
 module FFI
   module Generator
     class Task < Rake::TaskLib
-      def initialize(options = {})
+      attr_accessor :input_fn, :output_dir
+      def initialize(options = {}, &blk)
         @options = { :input_fn => '*.i', :output_dir => 'generated/' }.merge(options)
+        @input_fn = @options[:input_fn]
+        @output_dir = @options[:output_dir]
+        yield self if block_given?
         namespace 'ffi' do
           define_generate_task
           define_clean_task
@@ -14,7 +18,7 @@ module FFI
       def define_file_task(fn, xml_fn, output_fn)
         desc "Generate #{output_fn} from #{fn}"
         file output_fn => fn do
-          mkdir_p @options[:output_dir], :verbose => false
+          mkdir_p @output_dir, :verbose => false
           puts "Generating #{xml_fn} from #{fn} using SWIG..."
           `swig -xml #{xml_fn} #{fn}`
           puts "Generating #{output_fn} from #{xml_fn}..."
@@ -24,9 +28,9 @@ module FFI
         end
       end
       def define_file_tasks
-        Dir.glob(@options[:input_fn]).inject([]) do |output_fns, fn|
-          output_fn = File.join(@options[:output_dir], "#{File.basename(fn, '.i')}_wrap.rb")
-          xml_fn = File.join(@options[:output_dir], "#{File.basename(fn, '.i')}_wrap.xml")
+        Dir.glob(@input_fn).inject([]) do |output_fns, fn|
+          output_fn = File.join(@output_dir, "#{File.basename(fn, '.i')}_wrap.rb")
+          xml_fn = File.join(@output_dir, "#{File.basename(fn, '.i')}_wrap.xml")
           define_file_task(fn, xml_fn, output_fn)
           output_fns << output_fn
         end
@@ -37,7 +41,7 @@ module FFI
       def define_clean_task
         desc 'Remove all generated files'
         task :clean do
-          rm_rf @options[:output_dir] unless @options[:output_dir] == '.'
+          rm_rf @output_dir unless @output_dir == '.'
         end
       end
     end

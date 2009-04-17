@@ -137,6 +137,9 @@ describe Generator::Function do
   it 'should properly generate func_20' do
     Generator::Function.new(:node => (@node / 'cdecl')[20]).to_s.should == "attach_function :func_20, [ :pointer, callback([ :string, :pointer, :pointer ], :void), :pointer ], :void"
   end
+  it 'should properly generate func_20' do
+    Generator::Function.new(:node => (@node / 'cdecl')[21]).to_s.should == "attach_function :func_21, [ :pointer, callback([ :uchar, :pointer, :pointer ], :void), :pointer ], :void"
+  end
 end
 
 describe Generator::Structure do

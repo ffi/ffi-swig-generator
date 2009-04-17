@@ -1,1 +1,1 @@
-autotest: --format progress features
+autotest: --color features
