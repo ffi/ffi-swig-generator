@@ -43,7 +43,6 @@ module FFI
   end
 end
 
-require 'rubygems'
 FFI::Generator.require_all_libs_relative_to(__FILE__, 'generator')
 
 # EOF

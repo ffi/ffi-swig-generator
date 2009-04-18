@@ -1,3 +1,6 @@
+require 'rubygems'
+require 'nokogiri'
+
 module FFI
   module Generator
     NestedStructureNotSupported =<<EOM
@@ -72,7 +75,7 @@ EOM
       def fix_nested_structure(node)
         result = ""
         if struct?(node)
-          s = Structure.new(:node => node, :indent => @indent, :typedefs => @typedefs)
+          s = Struct.new(:node => node, :indent => @indent, :typedefs => @typedefs)
           result << (@nested_structure.has_key?(s.symname) ? fixme(s.to_s, NestedStructureNotSupported) : s.to_s)
         else
           u = Union.new(:node => node, :indent => @indent, :typedefs => @typedefs)
@@ -136,7 +139,7 @@ EOM
               add_type(e.symname, Generator::TYPES['int'])
               result << e.to_s << "\n"
             elsif struct?(node)
-              s = Structure.new(:node => node, :indent => @indent, :typedefs => @typedefs)
+              s = Struct.new(:node => node, :indent => @indent, :typedefs => @typedefs)
               add_type(s.symname, "struct #{s.symname}")
               unless @ignore_at_second_pass.include? node.attributes['id']
                 nested = handle_nested_structure(node, s.symname)

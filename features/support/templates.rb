@@ -284,7 +284,7 @@ end
 def rakefile_template
 <<-EOF
 require 'rubygems'
-require 'ffi-swig-generator'
+require '../lib/ffi-swig-generator'
 
 FFI::Generator::Task.new :input_fn => 'interfaces/*.i', :output_dir => 'generated/'
 
