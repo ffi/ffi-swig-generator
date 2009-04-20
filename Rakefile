@@ -27,7 +27,7 @@ PROJ.rubyforge.name = 'ffi-swig-gen'
 
 PROJ.readme_file = 'README.rdoc'
 
-PROJ.ann.paragraphs << 'FEATURES' << 'SYNOPSIS' << 'REQUIREMENTS' << 'DOWNLOAD' << 'EXAMPLES' << 'PROJECTS RELATED TO ffi-swig-generator'
+PROJ.ann.paragraphs << 'FEATURES' << 'SYNOPSIS' << 'REQUIREMENTS' << 'DOWNLOAD' << 'EXAMPLES' << 'PROJECTS'
 PROJ.ann.email[:from] = 'andrea.fazzi@alcacoop.it'
 PROJ.ann.email[:to] << 'dev@ruby-ffi.kenai.com' << 'users@ruby-ffi.kenai.com'
 PROJ.ann.email[:server] = 'smtp.gmail.com'
