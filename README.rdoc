@@ -1,5 +1,6 @@
 ffi-swig-generator
     by Andrea Fazzi
+    http://kenai.com/projects/ruby-ffi/sources/swig-generator/show
 
 == DESCRIPTION:
 
