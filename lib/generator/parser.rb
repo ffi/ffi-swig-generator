@@ -120,10 +120,15 @@ EOM
         end
         prepend_nested_structures(node, symname)
       end
+      def ignore?(name)
+        @ignored.any? do |to_be_ignored|
+          Regexp === to_be_ignored ? to_be_ignored =~ name : to_be_ignored == name
+        end
+      end
       def pass(node)
         result = ""
         node.traverse do |node|
-          unless @ignored.include?(get_attr(node, 'name'))
+          unless ignore?(get_attr(node, 'name'))
             if constant?(node)
               result << Constant.new(:node => node, :indent => @indent).to_s << "\n"
             elsif typedef?(node)

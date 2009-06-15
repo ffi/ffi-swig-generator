@@ -157,7 +157,7 @@ EOC
   it 'should ignore given declarations' do
     parser = Generator::Parser.new    
     parser.ignore 'CONST_1', 'e_1', 'test_struct', 'test_struct_5'
-    parser.ignore 'func_with_enum_2'
+    parser.ignore(/^func_with_enum/)
     parser.generate(@node).should == <<EOC
 
 module TestLib
@@ -241,7 +241,6 @@ module TestLib
   end
   attach_function :get_int, [ :pointer ], :int
   attach_function :get_char, [ :pointer ], :char
-  attach_function :func_with_enum, [ :int ], :int
   attach_function :func_with_typedef, [  ], :uchar
 
 end
