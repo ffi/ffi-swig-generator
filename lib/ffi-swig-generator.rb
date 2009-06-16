@@ -4,7 +4,7 @@ require 'nokogiri'
 module FFI
   module Generator
     # :stopdoc:
-    VERSION = '0.3.0'
+    VERSION = '0.3.1'
     LIBPATH = ::File.expand_path(::File.dirname(__FILE__)) + ::File::SEPARATOR
     PATH = ::File.dirname(LIBPATH) + ::File::SEPARATOR
     # :startdoc:
