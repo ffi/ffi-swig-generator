@@ -5,6 +5,7 @@ struct test_struct_1 {
   char c;
   const char* s;
   const char a[5];
+  const char b[5+1];
 };
 
 struct test_struct_2 {

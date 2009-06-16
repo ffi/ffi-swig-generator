@@ -1,3 +1,6 @@
+require 'rubygems'
+require 'nokogiri'
+
 module FFI
   module Generator
     # :stopdoc:

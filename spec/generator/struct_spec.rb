@@ -14,7 +14,8 @@ class TestStruct1 < FFI::Struct
          :i, :int,
          :c, :char,
          :s, :pointer,
-         :a, [:char, 5]
+         :a, [:char, 5],
+         :b, [:char, 5+1]
   )
   def s=(str)
     @s = FFI::MemoryPointer.from_string(str)

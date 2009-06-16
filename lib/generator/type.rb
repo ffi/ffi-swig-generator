@@ -3,6 +3,10 @@ module FFI
     require libpath('generator/node')
     class Type < Node
       attr_reader :full_decl
+      
+      ArraySizeRE = /([0-9\+\-\*\/\(\)]+)/
+      ArrayRE = /^a\(#{ArraySizeRE}\)/
+
       class Declaration
         def initialize(declaration)
           @full_decl = declaration
@@ -17,7 +21,7 @@ module FFI
           @full_decl[/^enum/]
         end
         def is_array?
-          @full_decl and @full_decl[/\w+\(\d+\)/]
+          @full_decl and @full_decl[ArrayRE]
         end
         def is_struct?
           @full_decl[/^struct/]
@@ -82,8 +86,8 @@ module FFI
       end
       def array
         if @declaration.is_array?
-          num = @full_decl.scan(/\w+\((\d+)\)/).flatten[0]
-          "[#{ffi_type_from(@full_decl.gsub!(/\w+\(\d+\)\./, ''))}, #{num}]"
+          num = @full_decl.scan(ArrayRE).flatten[0]
+          "[#{ffi_type_from(@full_decl.gsub!(/#{ArrayRE}\./, ''))}, #{num}]"
         end
       end
       def struct
@@ -111,16 +115,16 @@ module FFI
         @full_decl = full_decl
         @declaration = Declaration.new(full_decl)
         constant             || \
-        volatile             || \
-        typedef              || \
-        pointer              || \
-        enum                 || \
-        native               || \
-        struct               || \
-        union                || \
-        array                || \
-        inline_callback      || \
-        callback             || \
+        volatile             ||
+        typedef              ||
+        pointer              ||
+        enum                 ||
+        native               ||
+        struct               ||
+        union                ||
+        array                ||
+        inline_callback      ||
+        callback             ||
         undefined(full_decl)
       end
     end

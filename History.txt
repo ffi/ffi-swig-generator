@@ -1,3 +1,8 @@
+== 0.3.1 / 2009-06-16
+
+* Minor enhancements
+  * Parser#ignore accepts regexps now.
+
 == 0.3.0 / 2009-04-20
 
 * Major enhancements

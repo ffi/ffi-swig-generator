@@ -14,4 +14,9 @@ describe Generator::Constant do
     Generator::Constant.new(:node => (@node / 'constant')[2]).to_s.should == "CONST_3 = 1234"
     Generator::Constant.new(:node => (@node / 'constant')[3]).to_s.should == "CONST_4 = 1234"
   end
+  it 'should handle strings' do
+    pending do
+      Generator::Constant.new(:node => (@node / 'constant')[4]).to_s.should == "CONST_5 = \"string\""
+    end
+  end
 end

@@ -1,6 +1,3 @@
-require 'rubygems'
-require 'nokogiri'
-
 module FFI
   module Generator
     NestedStructureNotSupported =<<EOM
