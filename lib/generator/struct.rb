@@ -1,7 +1,6 @@
 module FFI
   module Generator
-    require libpath('generator/node')
-    class Struct< Type
+    class Struct < Type
       def self.string_accessors(field_name, indent = 0)
         result = <<-code
 def #{field_name}=(str)

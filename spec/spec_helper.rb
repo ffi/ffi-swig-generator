@@ -1,8 +1,9 @@
 require 'rubygems'
 require 'spec'
 
-require File.expand_path(
-    File.join(File.dirname(__FILE__), %w[.. lib ffi-swig-generator]))
+$:.unshift(File.expand_path(File.join(File.dirname(__FILE__), '../lib/')))
+
+require 'ffi-swig-generator'
 
 Spec::Runner.configure do |config|
   # == Mock Framework

@@ -263,7 +263,8 @@ end
 
 def rakefile_template
 <<-EOF
-require '../lib/ffi-swig-generator'
+$:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")))
+require 'ffi-swig-generator'
 
 FFI::Generator::Task.new
 EOF
@@ -283,8 +284,8 @@ end
 
 def rakefile_template
 <<-EOF
-require 'rubygems'
-require '../lib/ffi-swig-generator'
+$:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")))
+require 'ffi-swig-generator'
 
 FFI::Generator::Task.new :input_fn => 'interfaces/*.i', :output_dir => 'generated/'
 
@@ -301,8 +302,8 @@ class << self
 
 def rakefile_template
 <<-EOF
-require 'rubygems'
-require '../lib/ffi-swig-generator'
+$:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")))
+require 'ffi-swig-generator'
 
 FFI::Generator::Task.new do |task|
   task.input_fn = 'interfaces/*.i'
@@ -327,8 +328,9 @@ end
 
 def rakefile_template
 <<-EOF
-require 'rubygems'
-require '../lib/ffi-swig-generator'
+
+$:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")))
+require 'ffi-swig-generator'
 
 FFI::Generator::Task.new do |task|
   task.input_fn = 'interfaces/*.i'

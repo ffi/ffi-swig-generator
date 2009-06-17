@@ -1,6 +1,5 @@
 module FFI
   module Generator
-    require libpath('generator/type')
     class Function < Type
       class Argument < Type
         def to_s

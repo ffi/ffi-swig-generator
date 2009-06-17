@@ -22,7 +22,7 @@ PROJ.name = 'ffi-swig-generator'
 PROJ.authors = 'Andrea Fazzi'
 PROJ.email = 'andrea.fazzi@alcacoop.it'
 PROJ.url = 'http://kenai.com/projects/ruby-ffi/sources/swig-generator/show'
-PROJ.version = FFI::Generator::VERSION
+PROJ.version = '0.3.1'
 PROJ.rubyforge.name = 'ffi-swig-gen'
 
 PROJ.readme_file = 'README.rdoc'

@@ -1,6 +1,5 @@
 module FFI
   module Generator
-    require libpath('generator/node')
     class Type < Node
       attr_reader :full_decl
       

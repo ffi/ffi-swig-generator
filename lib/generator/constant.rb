@@ -1,6 +1,5 @@
 module FFI
   module Generator
-    require libpath('generator/node')
     class Constant < Node
       def initialize(params = { })
         super

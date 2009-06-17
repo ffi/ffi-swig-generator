@@ -1,6 +1,5 @@
 module FFI
   module Generator
-    require libpath('generator/node')
     class Enum < Node
       def initialize(params = { })
         super
