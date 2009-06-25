@@ -10,9 +10,10 @@ module FFI
       end
       private
       def sanitize!(value)
-        if @value.match(/\d+U$/) or @value.match(/\d+L$/)
+        const_regex = /(0x)?[0-9a-f]+/
+        if @value.match(/#{const_regex}U$/) or @value.match(/#{const_regex}L$/)
           result = value.chop
-        elsif @value.match(/\d+UL$/)
+        elsif @value.match(/#{const_regex}UL$/)
           result = @value.chop.chop
         else
           result = @value
