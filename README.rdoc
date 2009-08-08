@@ -1,6 +1,6 @@
 ffi-swig-generator
     by Andrea Fazzi
-    http://kenai.com/projects/ruby-ffi/sources/swig-generator/show
+    http://github.com/ffi/ffi-swig-generator
 
 == DESCRIPTION:
 
@@ -51,9 +51,9 @@ Download and install from rubygems:
 
   [sudo] gem install ffi-swig-generator
 
-or clone mercurial repository:
+or clone the git repository:
 
-  hg clone http://kenai.com/hg/ruby-ffi~swig-generator 
+  git clone git://github.com/ffi/ffi-swig-generator.git
 
 == EXAMPLES:
 
@@ -73,9 +73,10 @@ revision of ffi-wiiuse library.
 The generator has been used to generate code for the projects
 below. Take a look at them to see further usage examples.
 
-1. http://github.com/remogatto/ffi-wiiuse/tree/master 
-2. http://github.com/remogatto/ffi-opengl/tree/master 
-3. http://github.com/remogatto/ffi-spidermonkey/tree/master
+1. http://github.com/remogatto/ffi-wiiuse/
+2. http://github.com/remogatto/ffi-opengl/
+3. http://github.com/remogatto/ffi-spidermonkey/
+4. http://github.com/remogatto/ffi-tcc/
 
 == LICENSE:
 
