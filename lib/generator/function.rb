@@ -40,7 +40,7 @@ module FFI
       end
       def to_s
         unless @inline
-          @indent_str + "callback(:#{@symname}, [ #{get_params.join(', ')} ], #{get_rtype})"
+          @indent_str + "Callback_#{@symname} = callback(:#{@symname}, [ #{get_params.join(', ')} ], #{get_rtype})"
         else
           @indent_str + "callback([ #{get_params.join(', ')} ], #{get_rtype})"
         end

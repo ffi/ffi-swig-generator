@@ -57,7 +57,7 @@ code
         fields.each do |field|
           if field[1] == ':string'
             result << self.class.string_accessors(field[0], @indent + 2)
-          elsif field[1] =~ /^callback/ or @typedefs[field[1].delete(':')] =~ /^callback/
+          elsif field[1] =~ /^callback/ or @typedefs[field[1].split(/Callback_/).last] =~ /^callback/
             result << self.class.callback_accessors(field[0], @indent + 2)
           end
         end

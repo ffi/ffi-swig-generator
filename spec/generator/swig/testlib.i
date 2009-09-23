@@ -46,7 +46,7 @@ struct test_struct_2 {
   cb func;
   union_t u;
   cb callback;
-  void (*inline_callback)();
+  void (*inline_callback)(cb_2 cb_arg);
 };
 
 // struct with getter/setter method for strings and callbacks

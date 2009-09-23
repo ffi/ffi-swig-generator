@@ -43,19 +43,19 @@ module TestLib
            :c, :char
     )
   end
-  callback(:cb, [ :string, :string ], :void)
-  callback(:cb_2, [ :string, :string ], :pointer)
-  callback(:cb_3, [ :string, CamelCaseStruct ], CamelCaseStruct)
+  Callback_cb = callback(:cb, [ :string, :string ], :void)
+  Callback_cb_2 = callback(:cb_2, [ :string, :string ], :pointer)
+  Callback_cb_3 = callback(:cb_3, [ :string, CamelCaseStruct ], CamelCaseStruct)
   class TestStruct2 < FFI::Struct
     layout(
            :s, TestStruct,
            :camel_case_struct, CamelCaseStruct,
            :s_3, TestStruct3,
            :e, :int,
-           :func, :cb,
+           :func, Callback_cb,
            :u, UnionT,
-           :callback, :cb,
-           :inline_callback, callback([  ], :void)
+           :callback, Callback_cb,
+           :inline_callback, callback([ Callback_cb_2 ], :void)
     )
     def func=(cb)
       @func = cb
@@ -181,19 +181,19 @@ module TestLib
            :c, :char
     )
   end
-  callback(:cb, [ :string, :string ], :void)
-  callback(:cb_2, [ :string, :string ], :pointer)
-  callback(:cb_3, [ :string, CamelCaseStruct ], CamelCaseStruct)
+  Callback_cb = callback(:cb, [ :string, :string ], :void)
+  Callback_cb_2 = callback(:cb_2, [ :string, :string ], :pointer)
+  Callback_cb_3 = callback(:cb_3, [ :string, CamelCaseStruct ], CamelCaseStruct)
   class TestStruct2 < FFI::Struct
     layout(
            :s, TestStruct,
            :camel_case_struct, CamelCaseStruct,
            :s_3, TestStruct3,
            :e, :int,
-           :func, :cb,
+           :func, Callback_cb,
            :u, UnionT,
-           :callback, :cb,
-           :inline_callback, callback([  ], :void)
+           :callback, Callback_cb,
+           :inline_callback, callback([ Callback_cb_2 ], :void)
     )
     def func=(cb)
       @func = cb

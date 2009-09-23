@@ -99,7 +99,7 @@ module FFI
         ffi_type_from(Generator::TYPES['int']) if @declaration.is_enum?
       end
       def callback
-        ":#{@full_decl.scan(/^callback\s(\w+)/).flatten[0]}" if @declaration.is_callback?
+        "Callback_#{@full_decl.scan(/^callback\s(\w+)/).flatten[0]}" if @declaration.is_callback?
       end
       def inline_callback
         Callback.new(:node => @node, :inline => true, :typedefs => @typedefs).to_s if @declaration.is_inline_callback?        
