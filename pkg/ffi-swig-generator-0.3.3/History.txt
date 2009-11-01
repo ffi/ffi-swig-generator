@@ -1,0 +1,55 @@
+== 0.3.2 / 2009-06-17
+
+* Minor enhancements
+  * Rework requires and cleanup.
+
+== 0.3.1 / 2009-06-16
+
+* Minor enhancements
+  * Parser#ignore accepts regexps now.
+
+== 0.3.0 / 2009-04-20
+
+* Major enhancements
+  * Generate accessors methods for struct fields of type string and
+    callback.
+  * Add experimental support for nested structs and unions.
+  * Add initial support for configuration files.
+* Minor enhancements
+  * Add support for variadic arguments.
+  * Add support for anonymous callbacks in function and struct
+    declaration.
+  * Add support for volatile types.
+  * Add support for U, L, UL constant qualifiers.
+  * Improve testing with cucumber.
+  * Now the rake task can be configured through a configuration block.
+* Bug fixes
+  * Fix ruby 1.8.6/1.9.1 compatibility issues.
+  * Fix generated const char* return type.
+  * Fix a bug that prevented to manage struct name with a prepending
+    underscore.
+
+== 0.2.1 / 2009-03-06
+
+* 1 minor enhancement
+  * Removed old lib/ffi-generator.rb file.
+  
+== 0.2.0 / 2009-03-05
+
+* 1 major enhancement
+  * Added support for callbacks.
+  * Changed the package name from ffi-generator to ffi-swig-generator
+* 1 minor enhancement
+  * C functions with one void argument are correctly generated as FFI
+    functions with no arguments.
+
+== 0.1.0 / 2009-02-16
+
+* a bunch of minor fixes
+  * fix the gem build process
+  * new interface file for the wiiuse example
+
+== 0.0.1 / 2009-02-13
+
+* 1 major enhancement
+  * Birthday!
