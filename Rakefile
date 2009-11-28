@@ -21,7 +21,7 @@ task :default => 'spec:run'
 PROJ.name = 'ffi-swig-generator'
 PROJ.authors = 'Andrea Fazzi'
 PROJ.email = 'andrea.fazzi@alcacoop.it'
-PROJ.url = 'http://kenai.com/projects/ruby-ffi/sources/swig-generator/show'
+PROJ.url = 'http://github.com/ffi/ffi-swig-generator'
 PROJ.version = FFI::Generator::VERSION
 PROJ.rubyforge.name = 'ffi-swig-gen'
 
