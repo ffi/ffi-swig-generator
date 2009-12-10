@@ -1,6 +1,7 @@
 module FFI
   module Generator
-    TYPES = { 
+    TYPES = {
+      'bool' => ':bool',
       'char' => ':char',
       'double' => ':double',
       'float' => ':float',
@@ -14,8 +15,17 @@ module FFI
       'unsigned short'     => ':ushort',
       'unsigned short int' => ':ushort',
       'int' => ':int',
+      'int8_t' => ':int8',
+      'int16_t' => ':int16',
+      'int32_t' => ':int32',
+      'int64_t' => ':int64',
+      'intptr_t' => ':__intptr_t',
       'signed int' => ':int',
       'unsigned int' => ':uint',
+      'uint8_t' => ':uint8',
+      'uint16_t' => ':uint16',
+      'uint32_t' => ':uint32',
+      'uint64_t' => ':uint32',
       'long' => ':long',
       'long int' => ':long',
       'signed long' => ':long',
@@ -31,6 +41,6 @@ module FFI
       'unsigned long long'     => ':ulong_long',
       'unsigned long long int' => ':ulong_long',
       'void' => ':void'
-    }     
+    }
   end
 end
