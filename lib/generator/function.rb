@@ -21,7 +21,7 @@ module FFI
         params = get_params(@node).inject([]) do |array, node|
           array << Argument.new(:node => node, :typedefs => @typedefs).to_s
         end
-        @indent_str + "attach_function :#{@symname}, [ #{params.join(', ')} ], #{get_rtype}"
+        @indent_str + "attach_function :#{get_attr('sym_name')}, :#{@symname}, [ #{params.join(', ')} ], #{get_rtype}"
       end
       private
       def get_params(node)
