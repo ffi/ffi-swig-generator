@@ -138,7 +138,7 @@ EOM
               end
             elsif enum?(node)
               e = Enum.new(:node => node, :indent => @indent)
-              add_type(e.symname, Generator::TYPES['int'])
+              add_type(e.symname, e.symname)
               result << e.to_s << "\n"
             elsif struct?(node)
               s = Struct.new(:node => node, :indent => @indent, :typedefs => @typedefs)
