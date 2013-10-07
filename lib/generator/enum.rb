@@ -6,10 +6,31 @@ module FFI
         eval_items
       end
       def to_s
-        @items.sort { |i1, i2| i1[1] <=> i2[1] }.inject("") do |result, item|
-          result << assignment_str(item[0], item[1]) << "\n"
-        end
+        node = Node.new(:node => @node)
+
+        # start off the declaration of the enum
+        decl = "#{@indent_str}#{node.get_attr('sym_name')} = enum "
+
+        # determine the common prefix of all the enum names
+        prefix = /\A(.*).*(\n\1.*)*\Z/.match(
+            @items.map {|a,b| a}.join("\n"))[1]
+
+        decl + @items.map do |name,val|
+          # convert the long name into a symbol by stripping the prefix
+          # and prepending a colon.  Also handle the case of long names
+          # that start with numbers
+          sym = name.sub(/^#{prefix}/, "").downcase
+          sym = "'#{sym}'" if sym =~ /^[0-9]/
+          line = ":#{sym}"
+
+          # If this entry in the enum has a known value, let's include
+          # it here.  Keep in mind that the XML maintains the order of
+          # the enum elements as they were in the file.
+          line += ", #{val}" if val
+          line
+        end.join(",\n#{decl.size}")
       end
+
       private
       def assignment_str(name, value)
         @indent_str + "#{name} = #{value}"
@@ -22,15 +43,10 @@ module FFI
         end
       end
       def eval_items
-        @items = {}
-        get_items.each do |i|
-          node = Node.new(:node => i)
-          @items[node.get_attr('name')] = node.get_attr('enumvalueex') ? eval_expr(node.get_attr('enumvalueex')) : node.get_attr('enumvalue')
+        @items ||= (@node / "./enumitem").map do |x|
+          n = Node.new(:node => x)
+          [n.get_attr('name'), n.get_attr('enumvalue')]
         end
-        @items
-      end
-      def get_items
-        @node / './enumitem'
       end
     end
   end

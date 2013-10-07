@@ -14,6 +14,8 @@ module FFI
         case @type
         when 'double', 'float'
           result = @value.sub(/f$/, '')
+        when 'p.char'
+          result = "'#{@value}'"
         else
           const_regex = /(0x)?[0-9a-f]+/
           if @value.match(/#{const_regex}U$/) or @value.match(/#{const_regex}L$/)

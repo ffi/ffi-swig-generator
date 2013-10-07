@@ -6,6 +6,8 @@ module FFI
           case get_attr('type')
           when 'void'
             nil
+          when /^a\(\d*\)/
+            ':pointer'
           when 'v(...)'
             ':varargs'
           else
@@ -18,6 +20,11 @@ module FFI
         @type = get_attr('type')
       end
       def to_s
+        # Don't try to attach to inline functions; maybe look at using the
+        # inline gem to automatically handle these?
+        return "#{@indent_str}# inline function #{get_attr('sym_name')}" if
+          get_attr("code") != nil
+
         params = get_params(@node).inject([]) do |array, node|
           array << Argument.new(:node => node, :typedefs => @typedefs).to_s
         end
@@ -63,7 +70,7 @@ module FFI
         result
       end
       def get_rtype
-        Type.new(:declaration => @full_decl.scan(/f\([a-zA-z0-9,.\s\(\)]*\)\.([a-zA-Z0-9\.,\s\(\)]+)/).flatten[0], :typedefs => @typedefs).to_s
+        Type.new(:declaration => @full_decl.scan(/f\([a-zA-z0-9,.\s\(\)]*\)\.([a-zA-Z0-9_\.,\s\(\)]+)/).flatten[0], :typedefs => @typedefs).to_s
       end
     end
   end
