@@ -28,7 +28,7 @@ module FFI
           # the enum elements as they were in the file.
           line += ", #{val}" if val
           line
-        end.join(",\n#{decl.size}")
+        end.join(",\n#{" " * decl.size}")
       end
 
       private
