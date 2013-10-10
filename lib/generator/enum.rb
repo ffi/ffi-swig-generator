@@ -11,8 +11,11 @@ module FFI
         # start off the declaration of the enum
         decl = "#{@indent_str}#{node.get_attr('sym_name')} = enum "
 
+        # For some reason there exists an enum with only one value
+        prefix = @items[0][0].sub(/[^_]+$/, "") if @items.size == 1
+
         # determine the common prefix of all the enum names
-        prefix = /\A(.*).*(\n\1.*)*\Z/.match(
+        prefix ||= /\A(.*).*(\n\1.*)*\Z/.match(
             @items.map {|a,b| a}.join("\n"))[1]
 
         decl + @items.map do |name,val|
@@ -28,7 +31,7 @@ module FFI
           # the enum elements as they were in the file.
           line += ", #{val}" if val
           line
-        end.join(",\n#{" " * decl.size}")
+        end.join(",\n#{" " * decl.size}") + "\n"
       end
 
       private

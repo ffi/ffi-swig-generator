@@ -6,24 +6,36 @@ describe Generator::Enum do
   before :all do
     @node = generate_xml_wrap_from('enums')
   end
-  it 'should generate constants' do
+  it 'should generate enum constant' do
     Generator::Enum.new(:node => (@node / 'enum')[0]).to_s.should == <<EOE
-ENUM_1 = 0
-ENUM_2 = 1
-ENUM_3 = 2
+e = enum :first,
+         :second,
+         :third
 EOE
   end
   it 'should generate constants starting from the latest assignment' do
     Generator::Enum.new(:node => (@node / 'enum')[1]).to_s.should == <<EOE
-ENUM_21 = 2
-ENUM_22 = 3
-ENUM_23 = 4
+e_2 = enum :first, 2,
+           :second,
+           :third
 EOE
     Generator::Enum.new(:node => (@node / 'enum')[2]).to_s.should == <<EOE
-ENUM_31 = 0
-ENUM_32 = 5
-ENUM_33 = 6
+e_3 = enum :first,
+           :second, 5,
+           :third
 EOE
   end
+  it 'should generate numeric keys correctly' do
+    Generator::Enum.new(:node => (@node / 'enum')[3]).to_s.should == <<EOE
+e_4 = enum :'0',
+           :'1',
+           :'2'
+EOE
+  end
+  it 'should handle single-element enums' do
+    Generator::Enum.new(:node => (@node / 'enum')[4]).to_s.should == <<EOE
+e_5 = enum :key
+EOE
+  end    
 end
 
