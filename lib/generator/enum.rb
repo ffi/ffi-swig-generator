@@ -9,7 +9,15 @@ module FFI
         node = Node.new(:node => @node)
 
         # start off the declaration of the enum
-        decl = "#{@indent_str}#{node.get_attr('sym_name')} = enum "
+				decl = @indent_str.dup
+				if node.get_attr('name') # has a name
+					decl << "#{node.get_attr('name')} = "
+				end
+				decl << "enum "
+				if node.get_attr('sym_name') # has a typedef
+					decl << ":#{node.get_attr('sym_name')}, "
+				end
+				decl << "[\n"
 
         # For some reason there exists an enum with only one value
         prefix = @items[0][0].sub(/[^_]+$/, "") if @items.size == 1
@@ -18,20 +26,24 @@ module FFI
         prefix ||= /\A(.*).*(\n\1.*)*\Z/.match(
             @items.map {|a,b| a}.join("\n"))[1]
 
-        decl + @items.map do |name,val|
+        values = @items.map do |name,val|
           # convert the long name into a symbol by stripping the prefix
           # and prepending a colon.  Also handle the case of long names
           # that start with numbers
           sym = name.sub(/^#{prefix}/, "").downcase
           sym = "'#{sym}'" if sym =~ /^[0-9]/
-          line = ":#{sym}"
+          line = "#{@indent_str}  :#{sym},"
 
           # If this entry in the enum has a known value, let's include
           # it here.  Keep in mind that the XML maintains the order of
           # the enum elements as they were in the file.
-          line += ", #{val}" if val
+          line += " #{val}," if val
           line
-        end.join(",\n#{" " * decl.size}") + "\n"
+        end.join("\n")
+
+				final = "\n#{@indent_str}]\n"
+
+				decl + values + final
       end
 
       private
