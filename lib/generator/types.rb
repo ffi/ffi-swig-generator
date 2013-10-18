@@ -25,7 +25,7 @@ module FFI
       'uint8_t' => ':uint8',
       'uint16_t' => ':uint16',
       'uint32_t' => ':uint32',
-      'uint64_t' => ':uint32',
+      'uint64_t' => ':uint64',
       'long' => ':long',
       'long int' => ':long',
       'signed long' => ':long',
