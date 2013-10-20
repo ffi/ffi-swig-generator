@@ -63,6 +63,9 @@ EOM
       def typedef?(node)
         node.name == 'cdecl' and get_attr(node, 'kind') == 'typedef'
       end
+			def typedef_alias?(node)
+				typedef?(node) and !callback?(node) and !get_attr(node, 'sym_name').nil?
+			end
       def callback?(node)
         get_attr(node, 'decl') =~ /^p\.f\(/
       end
@@ -129,12 +132,14 @@ EOM
             if constant?(node)
               result << Constant.new(:node => node, :indent => @indent).to_s << "\n"
             elsif typedef?(node)
-              typedef = Type.new(:node => node)
+							typedef = Typedef.new(:node => node, :indent => @indent, :typedefs => @typedefs)
               add_type(typedef.symname, typedef.full_decl)
               if callback?(node)
                 cb = Callback.new(:node => node, :indent => @indent, :typedefs => @typedefs).to_s << "\n"
                 add_type(typedef.symname, "callback #{typedef.symname}")
                 result << cb.to_s
+							elsif typedef_alias?(node)
+								result << typedef.to_s << "\n"
               end
             elsif enum?(node)
               e = Enum.new(:node => node, :indent => @indent)

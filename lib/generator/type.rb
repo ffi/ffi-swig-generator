@@ -105,7 +105,7 @@ module FFI
         Callback.new(:node => @node, :inline => true, :typedefs => @typedefs).to_s if @declaration.is_inline_callback?        
       end
       def typedef
-        ffi_type_from(@typedefs[@full_decl]) if @typedefs.has_key?(@full_decl)
+        ":" + @full_decl if @typedefs.has_key?(@full_decl)
       end
       def undefined(type)
         "#{type}"

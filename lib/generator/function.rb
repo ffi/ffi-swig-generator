@@ -6,7 +6,7 @@ module FFI
           case get_attr('type')
           when 'void'
             nil
-          when /^a\(\d*\)/
+          when /^p\./
             ':pointer'
           when 'v(...)'
             ':varargs'
