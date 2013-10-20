@@ -162,7 +162,11 @@ EOM
             elsif function_decl?(node)
               result << Function.new(:node => node, :indent => @indent, :typedefs => @typedefs).to_s << "\n"
             elsif nested_type?(node)
-              @nested_type[get_attr(node, 'type')] = get_attr(node, 'nested')
+              # Pull the type name for the node.  Handle the case where the
+              # nested type is a pointer by only using everything after the
+              # last period as the type key.
+              type = get_attr(node, 'type').split(".").last
+              @nested_type[type] = get_attr(node, 'nested')
             elsif node.name == 'insert' and not insert_runtime?(node) and not node.parent.name == 'class'
               result << get_verbatim(node)
             end       
