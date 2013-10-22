@@ -1,14 +1,46 @@
 require File.join(File.dirname(__FILE__), %w[.. spec_helper])
 
 include FFI
+require 'ffi'
 
 describe Generator::Parser do
-  it_should_behave_like 'All specs'
-  before do
-    @node = generate_xml_wrap_from('testlib')
+  context 'using %import' do
+    before(:all) do
+      @node_1 = generate_xml_wrap_from('import_1')
+      @node_2 = generate_xml_wrap_from('import_2')
+      @module = Module.new
+      @module.module_exec do
+        extend FFI::Library
+        ffi_lib FFI::Library::LIBC
+      end
+    end
+
+    it 'should be able to parse %import' do
+      Generator::Parser.new.generate(@node_2)
+    end
+
+    it 'should not act like %include' do
+      # this is supposed to raise an exception because it has a function which uses a type declared in @node_1
+      expect{@module.module_eval Generator::Parser.new.generate(@node_2)}.to raise_error(TypeError)
+    end
+
+    it 'should work when both are loaded' do
+      @module.module_eval Generator::Parser.new.generate(@node_1)
+      @module.module_eval Generator::Parser.new.generate(@node_2)
+
+      expect(@module.method(:malloc)).to be_a(Method)
+      expect(@module.find_type(:my_size_t)).to be_a(FFI::Type)
+    end
   end
-  it 'should generate ruby ffi wrap code' do
-    Generator::Parser.new.generate(@node).should == <<EOC
+
+  context 'full module' do
+    it_should_behave_like 'All specs'
+    before do
+      @node = generate_xml_wrap_from('testlib')
+    end
+
+    it 'should generate ruby ffi wrap code' do
+      Generator::Parser.new.generate(@node).should == <<EOC
 
 module TestLib
   extend FFI::Library
@@ -153,12 +185,12 @@ module TestLib
 
 end
 EOC
-  end
-  it 'should ignore given declarations' do
-    parser = Generator::Parser.new    
-    parser.ignore 'CONST_1', 'e_1', 'test_struct', 'test_struct_5'
-    parser.ignore(/^func_with_enum/)
-    parser.generate(@node).should == <<EOC
+    end
+    it 'should ignore given declarations' do
+      parser = Generator::Parser.new    
+      parser.ignore 'CONST_1', 'e_1', 'test_struct', 'test_struct_5'
+      parser.ignore(/^func_with_enum/)
+      parser.generate(@node).should == <<EOC
 
 module TestLib
   extend FFI::Library
@@ -245,5 +277,6 @@ module TestLib
 
 end
 EOC
+    end
   end
 end
