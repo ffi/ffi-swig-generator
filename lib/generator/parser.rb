@@ -128,9 +128,10 @@ EOM
       def pass(node)
         result = ""
         node.traverse do |node|
+					node_result = ''
           unless ignore?(get_attr(node, 'name'))
             if constant?(node)
-              result << Constant.new(:node => node, :indent => @indent).to_s << "\n"
+              node_result << Constant.new(:node => node, :indent => @indent).to_s << "\n"
             elsif typedef?(node)
 							typedef = Typedef.new(:node => node, :indent => @indent, :typedefs => @typedefs)
               add_type(typedef.symname, typedef.full_decl)
@@ -139,28 +140,28 @@ EOM
                 add_type(typedef.symname, "callback #{typedef.symname}")
                 result << cb.to_s
 							elsif typedef_alias?(node)
-								result << typedef.to_s << "\n"
+								node_result << typedef.to_s << "\n"
               end
             elsif enum?(node)
               e = Enum.new(:node => node, :indent => @indent)
               add_type(e.symname, e.symname)
-              result << e.to_s << "\n"
+              node_result << e.to_s << "\n"
             elsif struct?(node)
               s = Struct.new(:node => node, :indent => @indent, :typedefs => @typedefs)
               add_type(s.symname, "struct #{s.symname}")
               unless @ignore_at_second_pass.include? node.attributes['id']
                 nested = handle_nested_structure(node, s.symname)
-                result << (nested.empty? ? s.to_s : nested << fixme(s.to_s, NestedStructureNotSupported))
+                node_result << (nested.empty? ? s.to_s : nested << fixme(s.to_s, NestedStructureNotSupported))
               end
             elsif union?(node)
               s = Union.new(:node => node, :indent => @indent, :typedefs => @typedefs)
               add_type(s.symname, "union #{s.symname}")
               unless @ignore_at_second_pass.include? node.attributes['id']
                 nested = handle_nested_structure(node, s.symname)
-                result << (nested.empty? ? s.to_s : nested << fixme(s.to_s, NestedStructureNotSupported))
+                node_result << (nested.empty? ? s.to_s : nested << fixme(s.to_s, NestedStructureNotSupported))
               end
             elsif function_decl?(node)
-              result << Function.new(:node => node, :indent => @indent, :typedefs => @typedefs).to_s << "\n"
+              node_result << Function.new(:node => node, :indent => @indent, :typedefs => @typedefs).to_s << "\n"
             elsif nested_type?(node)
               # Pull the type name for the node.  Handle the case where the
               # nested type is a pointer by only using everything after the
@@ -168,9 +169,20 @@ EOM
               type = get_attr(node, 'type').split(".").last
               @nested_type[type] = get_attr(node, 'nested')
             elsif node.name == 'insert' and not insert_runtime?(node) and not node.parent.name == 'class'
-              result << get_verbatim(node)
+              node_result << get_verbatim(node)
             end       
           end
+
+					# don't add output if node is the result of %import
+					parent = node
+					while parent.respond_to?(:parent) and parent = parent.parent
+						if parent.name == 'import'
+							break
+						end
+					end
+					if parent.name != 'import'
+						result << node_result
+					end
         end
         result
       end
