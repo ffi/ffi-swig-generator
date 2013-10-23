@@ -191,4 +191,11 @@ describe Generator::Enum do
     expect(@module::BOTH_SECOND).to eq(1)
     expect(@module::BOTH_THIRD).to eq(2)
   end
+
+  it 'handles defines as enum values' do
+    e_9 = @module.module_eval Generator::Enum.new(:node => (@node / 'enum')[8]).to_s + '; e_9'
+
+    expect(e_9[:first]).to eq(e_9[:second])
+    expect(@module::DUPLICATE_FIRST).to eq(@module::DUPLICATE_SECOND)
+  end
 end
