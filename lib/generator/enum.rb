@@ -9,15 +9,15 @@ module FFI
         node = Node.new(:node => @node)
 
         # start off the declaration of the enum
-				decl = @indent_str.dup
-				if node.get_attr('name') # has a name
-					decl << "#{node.get_attr('name')} = "
-				end
-				decl << "enum "
-				if node.get_attr('sym_name') # has a typedef
-					decl << ":#{node.get_attr('sym_name')}, "
-				end
-				decl << "[\n"
+        decl = @indent_str.dup
+        if node.get_attr('name') # has a name
+          decl << "#{node.get_attr('name')} = "
+        end
+        decl << "enum "
+        if node.get_attr('sym_name') # has a typedef
+          decl << ":#{node.get_attr('sym_name')}, "
+        end
+        decl << "[\n"
 
         # For some reason there exists an enum with only one value
         prefix = @items[0][:name].sub(/[^_]+$/, "") if @items.size == 1
@@ -26,10 +26,10 @@ module FFI
         prefix ||= /\A(.*).*(\n\1.*)*\Z/.match(
             @items.map {|i| i[:name]}.join("\n"))[1]
 
-				values = ''
-				constants = ''
-				@items.each do |item|
-					constants << "#{@indent_str}#{item[:sym_name]} = #{item[:valueex]}\n"
+        values = ''
+        constants = ''
+        @items.each do |item|
+          constants << "#{@indent_str}#{item[:sym_name]} = #{item[:valueex]}\n"
 
           # convert the long name into a symbol by stripping the prefix
           # and prepending a colon.  Also handle the case of long names
@@ -42,12 +42,12 @@ module FFI
           # it here.  Keep in mind that the XML maintains the order of
           # the enum elements as they were in the file.
           line += " #{item[:value]}," if item[:value]
-					values << line + "\n"
+          values << line + "\n"
         end
 
-				final = "#{@indent_str}]\n"
+        final = "#{@indent_str}]\n"
 
-				decl + values + final + constants
+        constants + decl + values + final
       end
 
       private
@@ -64,12 +64,12 @@ module FFI
       def eval_items
         @items ||= (@node / "./enumitem").map do |x|
           n = Node.new(:node => x)
-					{
-						:name => n.get_attr('name'),
-						:value => n.get_attr('enumvalue'),
-						:sym_name => n.get_attr('sym_name'),
-						:valueex => n.get_attr('enumvalue') || n.get_attr('enumvalueex'),
-					}
+          {
+            :name => n.get_attr('name'),
+            :value => n.get_attr('enumvalue'),
+            :sym_name => n.get_attr('sym_name'),
+            :valueex => n.get_attr('enumvalue') || n.get_attr('enumvalueex'),
+          }
         end
       end
     end
