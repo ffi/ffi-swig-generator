@@ -105,6 +105,11 @@ module FFI
         Callback.new(:node => @node, :inline => true, :typedefs => @typedefs).to_s if @declaration.is_inline_callback?        
       end
       def typedef
+        # Weird case where pointer() calls ffi_type_from() recursively.
+        # When it happens on a typedef pointer, the typedef comes out instead
+        # of ':pointer', so we don't let it happen here.
+        return if @is_pointer > 0
+
         # Three cases here:
         #   Not a typedef; return nil
         #   typedef is not a struct; return typedef symbol

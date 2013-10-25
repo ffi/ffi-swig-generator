@@ -33,3 +33,4 @@ void func_22(CamelStruct s);
 CamelStruct func_23(void);
 void func_24(char buf[12]);
 void func_25(CamelStruct *s);
+CamelStruct *func_26(void);
