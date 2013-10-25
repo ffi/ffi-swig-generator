@@ -6,7 +6,9 @@ module FFI
           case get_attr('type')
           when 'void'
             nil
-          when /^p\./
+          when /^a\(\d*\)/
+            # For functions of the form: int func(char arg[4]), we set this
+            # argument to be a :pointer.
             ':pointer'
           when 'v(...)'
             ':varargs'

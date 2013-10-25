@@ -26,7 +26,10 @@ volatile void func_19(volatile int value);
 void func_20(void *p1, void (*callback)(const char* str, void *p2, void *p3 ), void *p4);
 void func_21(void *p1, void (*callback)(const unsigned char uc, void *p2, void *p3 ), void *p4);
 
-
-
-
-
+typedef struct CamelStruct {
+  char c;
+} CamelStruct;
+void func_22(CamelStruct s);
+CamelStruct func_23(void);
+void func_24(char buf[12]);
+void func_25(CamelStruct *s);

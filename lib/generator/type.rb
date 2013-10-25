@@ -105,7 +105,21 @@ module FFI
         Callback.new(:node => @node, :inline => true, :typedefs => @typedefs).to_s if @declaration.is_inline_callback?        
       end
       def typedef
-        ":" + @full_decl if @typedefs.has_key?(@full_decl)
+        # Three cases here:
+        #   Not a typedef; return nil
+        #   typedef is not a struct; return typedef symbol
+        #   typedef is a struct; return the class
+        #
+        # This third case is important for functions such as:
+        #
+        #   typedef struct AVRational {
+        #     int32_t num;
+        #     int32_t den;
+        #   } AVRational;
+        #   AVRational multiply(AVRational a, AVRational b);
+        #
+        @typedefs[@full_decl] =~ /^struct / ? @full_decl : ":#{@full_decl}" if
+          @typedefs.has_key? @full_decl
       end
       def undefined(type)
         "#{type}"
