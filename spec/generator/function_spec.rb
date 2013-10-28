@@ -34,10 +34,10 @@ describe Generator::Function do
     Generator::Function.new(:node => (@node / 'cdecl')[7]).to_s.should == "attach_function :func_8, :func_8, [  ], :int"
   end
   it 'should properly generate struct arguments' do
-    Generator::Function.new(:node => (@node / 'cdecl')[9]).to_s.should == "attach_function :func_9, :func_9, [ TestStruct ], :void"
+    Generator::Function.new(:node => (@node / 'cdecl')[9]).to_s.should == "attach_function :func_9, :func_9, [ TestStruct.by_value ], :void"
   end
   it 'should properly generate struct return type' do
-    Generator::Function.new(:node => (@node / 'cdecl')[10]).to_s.should == "attach_function :func_10, :func_10, [  ], TestStruct"
+    Generator::Function.new(:node => (@node / 'cdecl')[10]).to_s.should == "attach_function :func_10, :func_10, [  ], TestStruct.by_value"
   end
   it 'should properly generate a function with no parameters' do
     Generator::Function.new(:node => (@node / 'cdecl')[11]).to_s.should == "attach_function :func_11, :func_11, [  ], :void"
@@ -65,11 +65,11 @@ describe Generator::Function do
   end
   it 'should handle typedef struct arguments' do
     node = (@node / '[value="func_22"]').first.ancestors("cdecl").first
-    Generator::Function.new(:node => node, :typedefs => {"CamelStruct" => "struct CamelStruct"}).to_s.should == "attach_function :func_22, :func_22, [ CamelStruct ], :void"
+    Generator::Function.new(:node => node, :typedefs => {"CamelStruct" => "struct CamelStruct"}).to_s.should == "attach_function :func_22, :func_22, [ CamelStruct.by_value ], :void"
   end
   it 'should handle typedef struct return' do
     node = (@node / '[value="func_23"]').first.ancestors("cdecl").first
-    Generator::Function.new(:node => node, :typedefs => {"CamelStruct" => "struct CamelStruct"}).to_s.should == "attach_function :func_23, :func_23, [  ], CamelStruct"
+    Generator::Function.new(:node => node, :typedefs => {"CamelStruct" => "struct CamelStruct"}).to_s.should == "attach_function :func_23, :func_23, [  ], CamelStruct.by_value"
   end
   it 'should handle array argument' do
     node = (@node / '[value="func_24"]').first.ancestors("cdecl").first

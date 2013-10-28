@@ -52,7 +52,7 @@ EOC
     Generator::Struct.new(:node => (@node / 'class')[3]).to_s.should == <<EOC
 class TestStruct4 < FFI::Struct
   layout(
-         :s, [TestStruct3, 5]
+         :s, [TestStruct3.by_value, 5]
   )
 end
 EOC
@@ -63,7 +63,7 @@ EOC
     Generator::Struct.new(:node => node).to_s.should == <<EOC
 class TestStruct5 < FFI::Struct
   layout(
-         :s, TestStruct4
+         :s, TestStruct4.by_value
   )
 end
 EOC

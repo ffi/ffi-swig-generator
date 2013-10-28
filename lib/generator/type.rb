@@ -99,7 +99,8 @@ module FFI
         end
       end
       def struct
-        Struct.camelcase(@full_decl.scan(/^struct\s(\w+)/).flatten[0]) if @declaration.is_struct?
+        return nil unless @declaration.is_struct?
+        Struct.camelcase(@full_decl.scan(/^struct\s(\w+)/).flatten[0]) + ".by_value"
       end
       def union
         Union.camelcase(@full_decl.scan(/^union\s(\w+)/).flatten[0]) if @declaration.is_union?
@@ -127,8 +128,10 @@ module FFI
         #   } AVRational;
         #   AVRational multiply(AVRational a, AVRational b);
         #
-        @typedefs[@full_decl] =~ /^struct / ? @full_decl : ":#{@full_decl}" if
-          @typedefs.has_key? @full_decl
+        return nil unless @typedefs.has_key? @full_decl
+
+        @typedefs[@full_decl] =~ /^struct / ? @full_decl + ".by_value"
+                                            : ":" + @full_decl
       end
       def undefined(type)
         "#{type}"

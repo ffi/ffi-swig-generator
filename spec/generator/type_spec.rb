@@ -18,10 +18,10 @@ describe Generator::Type do
     Generator::Type.new(:node => (@node / 'cdecl')[4]).to_s.should == '[:string, 5]'
   end
   it 'should generate struct type' do
-    Generator::Type.new(:node => (@node / 'cdecl')[6]).to_s.should == 'TestStruct'
+    Generator::Type.new(:node => (@node / 'cdecl')[6]).to_s.should == 'TestStruct.by_value'
   end
   it 'should generate struct array type' do
-    Generator::Type.new(:node => (@node / 'cdecl')[7]).to_s.should == '[TestStruct, 5]'
+    Generator::Type.new(:node => (@node / 'cdecl')[7]).to_s.should == '[TestStruct.by_value, 5]'
   end
   it 'should generate enum array type' do
     Generator::Type.new(:node => (@node / 'cdecl')[8]).to_s.should == '[:int, 5]'
