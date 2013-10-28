@@ -72,16 +72,25 @@ module FFI
         ffi_type_from(@full_decl.scan(/^q\(volatile\)\.(.+)/).flatten[0]) if @declaration.is_volatile?
       end
       def pointer
-        if @declaration.is_pointer? or @is_pointer > 0
-          @is_pointer += 1
-          if @full_decl.scan(/^p\.(.+)/).flatten[0]
-            ffi_type_from(@full_decl.scan(/^p\.(.+)/).flatten[0])
-          elsif @full_decl == 'char' and @is_pointer == 2
-            ':string'
-          else
-            ':pointer'
-          end
-        end        
+        return unless @declaration.is_pointer?
+        
+        # String case is easy, pointer (const, volitile, etc) to a char
+        return ':string' if @full_decl =~ /^p.(q\([a-z]+\)\.)*char$/
+
+        # Other types of pointers require us to strip the leading p.
+        tail_decl = @full_decl.split("p.", 2).last
+
+        # We need to expand any typedefs possible here.
+        tail_decl = @typedefs[tail_decl] if @typedefs.has_key?(tail_decl)
+
+        # Let's see if this is a struct
+        decl = Declaration.new(tail_decl)
+        # (require 'pry'; binding.pry)
+        return Struct.camelcase(tail_decl.split(" ").last) + ".ptr" if
+          decl.is_struct?
+
+        # Everything else is a :pointer
+        ":pointer"
       end
       def array
         if @declaration.is_array?
@@ -105,11 +114,6 @@ module FFI
         Callback.new(:node => @node, :inline => true, :typedefs => @typedefs).to_s if @declaration.is_inline_callback?        
       end
       def typedef
-        # Weird case where pointer() calls ffi_type_from() recursively.
-        # When it happens on a typedef pointer, the typedef comes out instead
-        # of ':pointer', so we don't let it happen here.
-        return if @is_pointer > 0
-
         # Three cases here:
         #   Not a typedef; return nil
         #   typedef is not a struct; return typedef symbol

@@ -59,5 +59,6 @@ unsigned short us;
 unsigned short int usi;
 void v;
 
-
+struct test_struct *struct_ptr;
+struct test_struct **struct_ptr_ptr;
 

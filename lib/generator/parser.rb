@@ -63,9 +63,9 @@ EOM
       def typedef?(node)
         node.name == 'cdecl' and get_attr(node, 'kind') == 'typedef'
       end
-			def typedef_alias?(node)
-				typedef?(node) and !callback?(node) and !get_attr(node, 'sym_name').nil?
-			end
+      def typedef_alias?(node)
+        typedef?(node) and !callback?(node) and !get_attr(node, 'sym_name').nil?
+      end
       def callback?(node)
         get_attr(node, 'decl') =~ /^p\.f\(/
       end
@@ -126,27 +126,32 @@ EOM
         end
       end
       def pass(node)
-        result = ""
+        result = []
         node.traverse do |node|
-					node_result = ''
+          node_result = ''
+          node_type = nil
           unless ignore?(get_attr(node, 'name'))
             if constant?(node)
+              node_type = :constant
               node_result << Constant.new(:node => node, :indent => @indent).to_s << "\n"
             elsif typedef?(node)
-							typedef = Typedef.new(:node => node, :indent => @indent, :typedefs => @typedefs)
+              node_type = :typedef
+              typedef = Typedef.new(:node => node, :indent => @indent, :typedefs => @typedefs)
               add_type(typedef.symname, typedef.full_decl)
               if callback?(node)
                 cb = Callback.new(:node => node, :indent => @indent, :typedefs => @typedefs).to_s << "\n"
                 add_type(typedef.symname, "callback #{typedef.symname}")
                 result << cb.to_s
-							elsif typedef_alias?(node)
-								node_result << typedef.to_s << "\n"
+              elsif typedef_alias?(node)
+                node_result << typedef.to_s << "\n"
               end
             elsif enum?(node)
+              node_type = :enum
               e = Enum.new(:node => node, :indent => @indent)
               add_type(e.symname, e.symname)
               node_result << e.to_s << "\n"
             elsif struct?(node)
+              node_type = :struct
               s = Struct.new(:node => node, :indent => @indent, :typedefs => @typedefs)
               add_type(s.symname, "struct #{s.symname}")
               unless @ignore_at_second_pass.include? node.attributes['id']
@@ -154,6 +159,7 @@ EOM
                 node_result << (nested.empty? ? s.to_s : nested << fixme(s.to_s, NestedStructureNotSupported))
               end
             elsif union?(node)
+              node_type = :union
               s = Union.new(:node => node, :indent => @indent, :typedefs => @typedefs)
               add_type(s.symname, "union #{s.symname}")
               unless @ignore_at_second_pass.include? node.attributes['id']
@@ -161,30 +167,87 @@ EOM
                 node_result << (nested.empty? ? s.to_s : nested << fixme(s.to_s, NestedStructureNotSupported))
               end
             elsif function_decl?(node)
+              node_type = :function
               node_result << Function.new(:node => node, :indent => @indent, :typedefs => @typedefs).to_s << "\n"
             elsif nested_type?(node)
+              node_type = :nested
               # Pull the type name for the node.  Handle the case where the
               # nested type is a pointer by only using everything after the
               # last period as the type key.
               type = get_attr(node, 'type').split(".").last
               @nested_type[type] = get_attr(node, 'nested')
             elsif node.name == 'insert' and not insert_runtime?(node) and not node.parent.name == 'class'
+              node_type = :insert
               node_result << get_verbatim(node)
             end       
           end
 
-					# don't add output if node is the result of %import
-					parent = node
-					while parent.respond_to?(:parent) and parent = parent.parent
-						if parent.name == 'import'
-							break
-						end
-					end
-					if parent.name != 'import'
-						result << node_result
-					end
+          # don't append unhandled node types
+          next unless node_type
+
+          # don't add output if node is the result of %import
+          parent = node
+          while parent.respond_to?(:parent) and parent = parent.parent
+            if parent.name == 'import'
+              break
+            end
+          end
+          if parent.name != 'import'
+            result << [ node_type, node_result ]
+          end
         end
-        result
+
+        # Now, our results may contain pointer references to Struct classes
+        # that are not defined until later in the file.  To handle this we
+        # process each chunk of user-defined text from the .i file, and
+        # generated text from the parser.  If the generated text contains
+        # any pointers to Struct classes, we will prepend the generated
+        # text with a minimal FFI::Struct class for each class.
+        #
+        # We process the code in groups of user-defined text, and generated
+        # text because it's possible that the user-defined text may actually
+        # contain both the end of one class and the start of a new class.  So
+        # the only way to safely prepend our minimal classes so that they are
+        # defined in the appropriate class is to shove them between each
+        # pair of user-defined text and generated text.
+
+        # If the .i did not start with user-defined text, prepend an empty
+        # user-defined text here to make processing easier.
+        result.unshift [ :insert, "" ] unless result[0][0] == :insert
+
+        result.inject([]) do |out, chunk|
+          # Step 1: Convert our result array into chunks of:
+          #  [ user-defined text, generated text ]
+          if chunk[0] == :insert
+            # new chunk
+            out << [chunk[1], ""]
+          else
+            # append the generated text to the existing chunk
+            out[-1][-1] << chunk[1]
+          end
+          out
+        end.inject("") do |buf, pair|
+          supplied, generated = pair
+
+          # Append the user-supplied text
+          buf << supplied if supplied
+
+          # move on if we don't have a generated section
+          next buf unless generated
+          
+          # Search our generated output for any Struct.ptr references.  For
+          # any structs we find, prepend a basic FFI::Struct class so the
+          # reference is not invalid when used later.
+          generated.scan(/([a-z0-9]+)\.ptr/i).uniq.flatten.each do |klass|
+            buf << "#{" " * @indent}class #{klass} < FFI::Struct; end\n"
+          end
+          
+          # Append our generated code
+          buf << generated
+         
+          # next chunk
+          buf
+        end
       end
     end
   end

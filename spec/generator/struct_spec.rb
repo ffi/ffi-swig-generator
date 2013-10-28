@@ -56,7 +56,38 @@ class TestStruct4 < FFI::Struct
   )
 end
 EOC
+  end
 
+  it 'should properly generate the layout for struct containing struct' do
+    node = (@node / "class//[value='test_struct_5']")[0].ancestors("class")[0]
+    Generator::Struct.new(:node => node).to_s.should == <<EOC
+class TestStruct5 < FFI::Struct
+  layout(
+         :s, TestStruct4
+  )
+end
+EOC
+  end
+
+  it 'should properly generate the layout for struct containing struct pointer' do
+    node = (@node / "class//[value='test_struct_6']")[0].ancestors("class")[0]
+    Generator::Struct.new(:node => node).to_s.should == <<EOC
+class TestStruct6 < FFI::Struct
+  layout(
+         :s, TestStruct4.ptr
+  )
+end
+EOC
+  end
+  it 'should prepend struct dependencies' do
+    node = (@node / "class//[value='test_struct_7']")[0].ancestors("class")[0]
+    Generator::Struct.new(:node => node).to_s.should == <<EOC
+class TestStruct7 < FFI::Struct
+  layout(
+         :s, UndefinedStruct.ptr
+  )
+end
+EOC
   end
 end
 

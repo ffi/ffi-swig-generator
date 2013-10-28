@@ -278,5 +278,14 @@ module TestLib
 end
 EOC
     end
+
+    it 'should prepend struct prerequisites' do
+      m = Module.new
+      m.module_exec do
+        extend FFI::Library
+      end
+      xml = generate_xml_wrap_from('parser_prereqs')
+      m.module_eval Generator::Parser.new.generate(xml)
+    end
   end
 end

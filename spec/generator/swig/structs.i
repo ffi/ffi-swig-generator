@@ -24,3 +24,10 @@ struct test_struct_5 {
   struct test_struct_4 s;
 };
 
+struct test_struct_6 {
+  struct test_struct_4 *s;
+};
+
+struct test_struct_7 {
+  struct undefined_struct *s;
+};

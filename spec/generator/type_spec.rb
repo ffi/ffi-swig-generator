@@ -35,4 +35,15 @@ describe Generator::Type do
       Generator::Type.new(:node => (@node / 'cdecl')[i + 11]).to_s.should == type[1]
     end 
   end
+
+  it 'should handle struct pointers' do
+    node = (@node / 'cdecl//[value=struct_ptr]')[0].ancestors("cdecl")
+    Generator::Type.new(:node => node).to_s.should == "TestStruct.ptr"
+  end
+  it 'should handle struct pointers' do
+    node = (@node / 'cdecl//[value=struct_ptr_ptr]')[0].ancestors("cdecl")
+    Generator::Type.new(:node => node).to_s.should == ":pointer"
+  end
+
+
 end

@@ -77,10 +77,10 @@ describe Generator::Function do
   end   
   it 'should handle typedef struct pointer argument' do
     node = (@node / '[value="func_25"]').first.ancestors("cdecl").first
-    Generator::Function.new(:node => node, :typedefs => {"CamelStruct" => "struct CamelStruct"}).to_s.should == "attach_function :func_25, :func_25, [ :pointer ], :void"
+    Generator::Function.new(:node => node, :typedefs => {"CamelStruct" => "struct CamelStruct"}).to_s.should == "attach_function :func_25, :func_25, [ CamelStruct.ptr ], :void"
   end   
   it 'should handle typedef struct pointer return value' do
     node = (@node / '[value="func_26"]').first.ancestors("cdecl").first
-    Generator::Function.new(:node => node, :typedefs => {"CamelStruct" => "struct CamelStruct"}).to_s.should == "attach_function :func_26, :func_26, [  ], :pointer"
+    Generator::Function.new(:node => node, :typedefs => {"CamelStruct" => "struct CamelStruct"}).to_s.should == "attach_function :func_26, :func_26, [  ], CamelStruct.ptr"
   end   
 end
