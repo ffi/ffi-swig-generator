@@ -64,6 +64,10 @@ EOM
         node.name == 'cdecl' and get_attr(node, 'kind') == 'typedef'
       end
       def typedef_alias?(node)
+        # This is to handle the case where a typedef references an opaque
+        # struct.  In that case the typedef code would output something that
+        # throws an error.  See issue #21
+        return false if get_attr(node, 'type') =~ /^struct /
         typedef?(node) and !callback?(node) and !get_attr(node, 'sym_name').nil?
       end
       def callback?(node)

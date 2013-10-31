@@ -1,5 +1,6 @@
 pkg
 announcement.txt
 generated
-
+spec/generator/swig/*.xml
+*.swp
 
