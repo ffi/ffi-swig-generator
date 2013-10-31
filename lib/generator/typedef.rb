@@ -6,7 +6,7 @@ module FFI
       def initialize(params = { })
         super
         @name = get_attr('sym_name')
-        @type = Type.new(:declaration => get_attr('type'), :typedefs => @typedefs)
+        @type = Type.new(:node => @node, :typedefs => @typedefs)
       end
       def to_s
         @indent_str + "typedef #{@type}, :#{@name}"
