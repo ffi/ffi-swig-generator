@@ -214,6 +214,13 @@ EOM
         # the only way to safely prepend our minimal classes so that they are
         # defined in the appropriate class is to shove them between each
         # pair of user-defined text and generated text.
+        #
+        # Another case we need to consider is that of pointers to opaque
+        # structs in attach_function() calls.  attach_function() does not
+        # appear to like Struct.ptr for structs that have no layout.  So
+        # for all Struct.ptr references in our generated code, we verify that
+        # a class for that struct was generated with a layout.  If not, we
+        # replace all pointer references to that struct with :pointer.
 
         # If the .i did not start with user-defined text, prepend an empty
         # user-defined text here to make processing easier.
@@ -239,11 +246,17 @@ EOM
           # move on if we don't have a generated section
           next buf unless generated
           
-          # Search our generated output for any Struct.ptr references.  For
-          # any structs we find, prepend a basic FFI::Struct class so the
-          # reference is not invalid when used later.
+          # Search our generated output for any Struct.ptr references.
+          # If the layout of the struct is defined anywhere in our output,
+          # prepend a minimal FFI::Struct declaration to the front of this
+          # generated code segment.  If the layout of the struct is never
+          # supplied, we convert all Struct.ptr references to :pointer.
           generated.scan(/([a-z0-9]+)\.ptr/i).uniq.flatten.each do |klass|
-            buf << "#{" " * @indent}class #{klass} < FFI::Struct; end\n"
+            if result.find { |t,b| b =~ /^  class #{klass}/ }
+              buf << "#{" " * @indent}class #{klass} < FFI::Struct; end\n"
+            else
+              generated.gsub! /([^a-zA-Z0-9])#{klass}.ptr/, "\\1:pointer"
+            end
           end
           
           # Append our generated code
