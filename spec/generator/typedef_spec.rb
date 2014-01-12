@@ -42,4 +42,9 @@ describe Generator::Typedef do
     @module.module_eval @parser.generate((@node / 'cdecl')[5])
     @module.find_type(:pInt).should == @module.find_type(:pointer)
   end
+
+  it 'can generate callback typedefs' do
+    @parser.generate((@node / 'cdecl')[6]).should \
+      match(/ = callback\(:myfunc, \[ :int \], :void\)/)
+  end
 end

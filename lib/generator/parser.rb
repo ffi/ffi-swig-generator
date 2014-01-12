@@ -145,7 +145,7 @@ EOM
               if callback?(node)
                 cb = Callback.new(:node => node, :indent => @indent, :typedefs => @typedefs).to_s << "\n"
                 add_type(typedef.symname, "callback #{typedef.symname}")
-                result << cb.to_s
+                node_result << cb.to_s
               elsif typedef_alias?(node)
                 node_result << typedef.to_s << "\n"
               end

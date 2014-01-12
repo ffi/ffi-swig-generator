@@ -10,3 +10,4 @@ _size_t wcstombs(char *restrict, const _wchar_t *restrict, __size_t);
 struct opaque_struct;
 typedef struct opaque_struct opaque_struct;
 typedef int * pInt;
+typedef void (*myfunc) (int foo);
