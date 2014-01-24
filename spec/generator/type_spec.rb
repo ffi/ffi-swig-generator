@@ -44,6 +44,10 @@ describe Generator::Type do
     node = (@node / 'cdecl//[value=struct_ptr_ptr]')[0].ancestors("cdecl")
     Generator::Type.new(:node => node).to_s.should == ":pointer"
   end
-
-
+  it 'should handle known enums' do
+    typedefs = { "TestEnum" => "enum test_enum" }
+    node = (@node / 'cdecl//[value=enum_value]')[0].ancestors("cdecl")
+    Generator::Type.new(:node => node, :typedefs => typedefs).to_s \
+      .should == "TestEnum"
+  end
 end

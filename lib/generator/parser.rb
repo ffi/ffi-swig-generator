@@ -152,7 +152,7 @@ EOM
             elsif enum?(node)
               node_type = :enum
               e = Enum.new(:node => node, :indent => @indent)
-              add_type(e.symname, e.symname)
+              add_type(e.symname, "enum #{e.symname}")
               node_result << e.to_s << "\n"
             elsif struct?(node)
               node_type = :struct

@@ -62,3 +62,4 @@ void v;
 struct test_struct *struct_ptr;
 struct test_struct **struct_ptr_ptr;
 
+enum test_enum enum_value;

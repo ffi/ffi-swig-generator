@@ -106,7 +106,11 @@ module FFI
         Union.camelcase(@full_decl.scan(/^union\s(\w+)/).flatten[0]) if @declaration.is_union?
       end
       def enum
-        ffi_type_from(Generator::TYPES['int']) if @declaration.is_enum?
+        return nil unless @declaration.is_enum?
+
+        # Look up the class for the enum in our typedefs, otherwise use :int
+        (@typedefs.find { |k,v| v == @full_decl } || []).first ||
+          ffi_type_from(Generator::TYPES['int'])
       end
       def callback
         "Callback_#{@full_decl.scan(/^callback\s(\w+)/).flatten[0]}" if @declaration.is_callback?
