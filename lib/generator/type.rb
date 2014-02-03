@@ -85,7 +85,6 @@ module FFI
 
         # Let's see if this is a struct
         decl = Declaration.new(tail_decl)
-        # (require 'pry'; binding.pry)
         return Struct.camelcase(tail_decl.split(" ").last) + ".ptr" if
           decl.is_struct?
 
@@ -119,23 +118,30 @@ module FFI
         Callback.new(:node => @node, :inline => true, :typedefs => @typedefs).to_s if @declaration.is_inline_callback?        
       end
       def typedef
-        # Three cases here:
-        #   Not a typedef; return nil
-        #   typedef is not a struct; return typedef symbol
-        #   typedef is a struct; return the class
-        #
-        # This third case is important for functions such as:
-        #
-        #   typedef struct AVRational {
-        #     int32_t num;
-        #     int32_t den;
-        #   } AVRational;
-        #   AVRational multiply(AVRational a, AVRational b);
-        #
-        return nil unless @typedefs.has_key? @full_decl
+        # Pull the ruby type from the typedefs.  If one doesn't exist, this
+        # isn't a typedef and we just return nil.
+        ruby_decl = @typedefs[@full_decl] or return nil
 
-        @typedefs[@full_decl] =~ /^struct / ? @full_decl + ".by_value"
-                                            : ":" + @full_decl
+        # For those typedefs that were legitimately typedef'ed in the C code,
+        # our ruby declaration will be a string representing a symbol for that
+        # type.  Ex:
+        #   @typedefs => {
+        #     'my_time_t' => ':my_time_t'
+        #   }
+        #
+        # For these we just return the ruby type
+        return ruby_decl if ruby_decl =~ /^:/
+
+        # For the remaining typedefs, the mapping is from a C data type to a
+        # string that Type can parse to construct the Ruby data type.  Ex:
+        #   @typedefs => {
+        #     'example_struct' => 'struct example_struct',
+        #     'my_union' => 'union my_union',
+        #   }
+        #
+        # For these entries in typedefs, we return the type string for the ruby
+        # declaration.
+        return Type.new(:declaration => ruby_decl, :typedefs => @typedefs).to_s
       end
       def undefined(type)
         "#{type}"

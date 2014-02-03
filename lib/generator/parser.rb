@@ -141,7 +141,7 @@ EOM
             elsif typedef?(node)
               node_type = :typedef
               typedef = Typedef.new(:node => node, :indent => @indent, :typedefs => @typedefs)
-              add_type(typedef.symname, typedef.full_decl)
+              add_type(typedef.symname, ":#{typedef.symname}")
               if callback?(node)
                 cb = Callback.new(:node => node, :indent => @indent, :typedefs => @typedefs).to_s << "\n"
                 add_type(typedef.symname, "callback #{typedef.symname}")

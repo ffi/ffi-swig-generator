@@ -89,6 +89,26 @@ class TestStruct7 < FFI::Struct
 end
 EOC
   end
+
+  it 'should handle nested anonymous unions' do
+
+    # This is the typedef that is created when the anonymous union within
+    # test_struct_8 is parsed.
+    typedefs = { "test_struct_8_data" => "union test_struct_8_data" }
+
+    # Find our test struct
+    node = (@node / "class//[value='test_struct_8']")[0].ancestors("class")[0]
+
+    # Parse it and verify we're referencing the union in the typedef
+    Generator::Struct.new(:node => node, :typedefs => typedefs).to_s \
+      .should == <<EOC
+class TestStruct8 < FFI::Struct
+  layout(
+         :data, TestStruct8Data
+  )
+end
+EOC
+  end
 end
 
 describe Generator::Union do
