@@ -2,7 +2,7 @@
 require 'find'
 require 'rake/packagetask'
 require 'rubygems/user_interaction'
-require 'rubygems/builder'
+# require 'rubygems/builder'
 
 module Bones
 class GemPackageTask < Rake::PackageTask
