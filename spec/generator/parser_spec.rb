@@ -44,11 +44,18 @@ describe Generator::Parser do
 
 module TestLib
   extend FFI::Library
+  class TestStruct < FFI::Struct; end
   CONST_1 = 0x10
   CONST_2 = 0x20
+  typedef :uchar, :byte
   ENUM_1 = 0
-  ENUM_2 = 1
-  ENUM_3 = 2
+  ENUM_2 = ENUM_1 + 1
+  ENUM_3 = ENUM_2 + 1
+  e_1 = enum :enum_t, [
+    :'1',
+    :'2',
+    :'3',
+  ]
 
   class UnionT < FFI::Union
     layout(
@@ -60,14 +67,14 @@ module TestLib
     layout(
            :i, :int,
            :c, :char,
-           :b, :uchar
+           :b, :byte
     )
   end
   class CamelCaseStruct < FFI::Struct
     layout(
            :i, :int,
            :c, :char,
-           :b, :uchar
+           :b, :byte
     )
   end
   class TestStruct3 < FFI::Struct
@@ -77,13 +84,13 @@ module TestLib
   end
   Callback_cb = callback(:cb, [ :string, :string ], :void)
   Callback_cb_2 = callback(:cb_2, [ :string, :string ], :pointer)
-  Callback_cb_3 = callback(:cb_3, [ :string, CamelCaseStruct ], CamelCaseStruct)
+  Callback_cb_3 = callback(:cb_3, [ :string, CamelCaseStruct.by_value ], CamelCaseStruct.by_value)
   class TestStruct2 < FFI::Struct
     layout(
-           :s, TestStruct,
-           :camel_case_struct, CamelCaseStruct,
-           :s_3, TestStruct3,
-           :e, :int,
+           :s, TestStruct.by_value,
+           :camel_case_struct, CamelCaseStruct.by_value,
+           :s_3, TestStruct3.by_value,
+           :e, :enum_t,
            :func, Callback_cb,
            :u, UnionT,
            :callback, Callback_cb,
@@ -162,10 +169,10 @@ module TestLib
 #   class TestStruct5BigUnionField < FFI::Union
 #     layout(
 #            :f, :float,
-#            :union_field, TestStruct5BigUnionFieldUnionField,
-#            :nested_struct_field_3, TestStruct5BigUnionFieldNestedStructField3,
-#            :nested_struct_field_2, TestStruct5BigUnionFieldNestedStructField2,
-#            :nested_struct_field_1, TestStruct5BigUnionFieldNestedStructField1
+#            :nested_struct_field_1, TestStruct5BigUnionFieldNestedStructField1.by_value,
+#            :nested_struct_field_2, TestStruct5BigUnionFieldNestedStructField2.by_value,
+#            :nested_struct_field_3, TestStruct5BigUnionFieldNestedStructField3.by_value,
+#            :union_field, TestStruct5BigUnionFieldUnionField
 #     )
 #   end
 # FIXME: Nested structures are not correctly supported at the moment.
@@ -177,11 +184,11 @@ module TestLib
 #            :big_union_field, TestStruct5BigUnionField
 #     )
 #   end
-  attach_function :get_int, [ :pointer ], :int
-  attach_function :get_char, [ :pointer ], :char
-  attach_function :func_with_enum, [ :int ], :int
-  attach_function :func_with_enum_2, [ :int ], :int
-  attach_function :func_with_typedef, [  ], :uchar
+  attach_function :get_int, :get_int, [ TestStruct.ptr ], :int
+  attach_function :get_char, :get_char, [ TestStruct.ptr ], :char
+  attach_function :func_with_enum, :func_with_enum, [ e_1 ], :int
+  attach_function :func_with_enum_2, :func_with_enum_2, [ :enum_t ], :int
+  attach_function :func_with_typedef, :func_with_typedef, [  ], :byte
 
 end
 EOC
@@ -194,7 +201,9 @@ EOC
 
 module TestLib
   extend FFI::Library
+  class TestStruct < FFI::Struct; end
   CONST_2 = 0x20
+  typedef :uchar, :byte
   class UnionT < FFI::Union
     layout(
            :c, :char,
@@ -205,7 +214,7 @@ module TestLib
     layout(
            :i, :int,
            :c, :char,
-           :b, :uchar
+           :b, :byte
     )
   end
   class TestStruct3 < FFI::Struct
@@ -215,13 +224,13 @@ module TestLib
   end
   Callback_cb = callback(:cb, [ :string, :string ], :void)
   Callback_cb_2 = callback(:cb_2, [ :string, :string ], :pointer)
-  Callback_cb_3 = callback(:cb_3, [ :string, CamelCaseStruct ], CamelCaseStruct)
+  Callback_cb_3 = callback(:cb_3, [ :string, CamelCaseStruct.by_value ], CamelCaseStruct.by_value)
   class TestStruct2 < FFI::Struct
     layout(
-           :s, TestStruct,
-           :camel_case_struct, CamelCaseStruct,
-           :s_3, TestStruct3,
-           :e, :int,
+           :s, TestStruct.by_value,
+           :camel_case_struct, CamelCaseStruct.by_value,
+           :s_3, TestStruct3.by_value,
+           :e, :enum_t,
            :func, Callback_cb,
            :u, UnionT,
            :callback, Callback_cb,
@@ -271,9 +280,9 @@ module TestLib
     end
 
   end
-  attach_function :get_int, [ :pointer ], :int
-  attach_function :get_char, [ :pointer ], :char
-  attach_function :func_with_typedef, [  ], :uchar
+  attach_function :get_int, :get_int, [ TestStruct.ptr ], :int
+  attach_function :get_char, :get_char, [ TestStruct.ptr ], :char
+  attach_function :func_with_typedef, :func_with_typedef, [  ], :byte
 
 end
 EOC

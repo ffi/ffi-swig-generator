@@ -35,7 +35,5 @@ PROJ.ann.email[:server] = 'smtp.gmail.com'
 PROJ.ruby_opts = []
 PROJ.spec.opts << '--color'
 
-depend_on 'rake'
-depend_on 'nokogiri'
 
 # EOF
