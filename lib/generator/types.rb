@@ -37,7 +37,7 @@ module FFI
       'long long int' => ':long_long',
       'signed long long'     => ':long_long',
       'signed long long int' => ':long_long',
-      'size_t' => ':uint',
+      'size_t' => ':size_t',
       'unsigned long long'     => ':ulong_long',
       'unsigned long long int' => ':ulong_long',
       'void' => ':void'
