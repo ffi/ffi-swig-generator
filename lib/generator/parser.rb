@@ -141,7 +141,11 @@ EOM
             elsif typedef?(node)
               node_type = :typedef
               typedef = Typedef.new(:node => node, :indent => @indent, :typedefs => @typedefs)
-              add_type(typedef.symname, ":#{typedef.symname}")
+              # Only add this typedef to the list if one does not currently
+              # already exists.  This is to prevent a typedef from overwriting
+              # the typedef entry created by struct.  See issue #29.
+              add_type(typedef.symname, ":#{typedef.symname}") unless
+                @typedefs.has_key? typedef.symname
               if callback?(node)
                 cb = Callback.new(:node => node, :indent => @indent, :typedefs => @typedefs).to_s << "\n"
                 add_type(typedef.symname, "callback #{typedef.symname}")
