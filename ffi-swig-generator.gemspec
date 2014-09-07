@@ -27,12 +27,15 @@ Gem::Specification.new do |s|
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<rake>, [">= 0.9.2.2"])
       s.add_runtime_dependency(%q<nokogiri>, [">= 1.6.0"])
+      s.add_runtime_dependency('ffi')
     else
       s.add_dependency(%q<rake>, [">= 0.9.2.2"])
       s.add_dependency(%q<nokogiri>, [">= 1.6.0"])
+      s.add_dependency('ffi')
     end
   else
     s.add_dependency(%q<rake>, [">= 0.9.2.2"])
     s.add_dependency(%q<nokogiri>, [">= 1.6.0"])
+    s.add_dependency('ffi')
   end
 end

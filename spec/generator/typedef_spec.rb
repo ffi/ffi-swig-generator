@@ -40,6 +40,14 @@ describe Generator::Typedef do
     parser.generate(node).should == ""
   end
 
+  it 'will typedef pointers to opaque structs' do
+    parser = Generator::Parser.new
+    node = generate_xml_wrap_from('typedefs_opaque_pointer')
+    code = parser.generate(node)
+    code.should match /attach_function :func, .* :opaque_pointer$/
+    code.should include "typedef :pointer, :opaque_pointer"
+  end
+
   it 'can generate pointer typedefs' do
     @module.module_eval @parser.generate((@node / 'cdecl')[5])
     @module.find_type(:pInt).should == @module.find_type(:pointer)

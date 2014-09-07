@@ -7,6 +7,12 @@ module FFI
         super
         @name = get_attr('sym_name')
         @type = Type.new(:node => @node, :typedefs => @typedefs)
+
+        # Issue #30, if this is a pointer to an opaque struct, let's demote it
+        # to a :pointer type
+        if @type.to_s =~ /^(.*)\.ptr$/
+          @type = ":pointer" unless @typedefs[$1]
+        end
       end
       def to_s
         @indent_str + "typedef #{@type}, :#{@name}"
