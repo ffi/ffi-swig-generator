@@ -83,4 +83,8 @@ describe Generator::Function do
     node = (@node / '[value="func_26"]').first.ancestors("cdecl").first
     Generator::Function.new(:node => node, :typedefs => {"CamelStruct" => "struct CamelStruct"}).to_s.should == "attach_function :func_26, :func_26, [  ], CamelStruct.ptr"
   end   
+  it 'should handle pointer to pointer arguments within a callback' do
+    node = (@node / '[value="func_27"]').first.ancestors("cdecl").first
+    Generator::Function.new(:node => node).to_s.should == "attach_function :func_27, :func_27, [ callback([ :int, :pointer ], :int), :int ], :pointer"
+  end
 end

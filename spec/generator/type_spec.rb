@@ -50,4 +50,8 @@ describe Generator::Type do
     Generator::Type.new(:node => node, :typedefs => typedefs).to_s \
       .should == "TestEnum"
   end
+  it 'should handle pointers to unsized arrays' do
+    node = (@node / 'cdecl//[value=argv]')[0].ancestors("cdecl")
+    Generator::Type.new(:node => node).to_s.should == ":pointer"
+  end
 end

@@ -14,7 +14,7 @@ module FFI
           Generator::TYPES.has_key?(@full_decl)
         end
         def is_pointer?
-          @full_decl[/^p\./] and not is_inline_callback?
+          @full_decl[/^(a\(\)\.)?p\./] and not is_inline_callback?
         end
         def is_enum?
           @full_decl[/^enum/]
