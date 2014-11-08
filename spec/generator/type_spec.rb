@@ -54,4 +54,11 @@ describe Generator::Type do
     node = (@node / 'cdecl//[value=argv]')[0].ancestors("cdecl")
     Generator::Type.new(:node => node).to_s.should == ":pointer"
   end
+  it 'will treat va_lists as pointers' do
+    parser = Generator::Parser.new
+    node = generate_xml_wrap_from('types_valist')
+    code = parser.generate(node)
+    code.should \
+      include("attach_function :fn, :fn, [ :string, :pointer ], :int")
+  end
 end

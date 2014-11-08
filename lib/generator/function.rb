@@ -12,6 +12,8 @@ module FFI
             ':pointer'
           when 'v(...)'
             ':varargs'
+          when 'va_list'
+            ':pointer'
           else
             super
           end
