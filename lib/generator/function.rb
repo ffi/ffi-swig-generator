@@ -67,6 +67,7 @@ module FFI
           end
         else
           result = @full_decl.scan(/p.f\((.*)\)/).flatten[0].split(',').inject([]) do |array, type|
+            type = ':pointer' if type == 'va_list'
             array << (type == 'void' ? '' : Type.new(:declaration => type, :typedefs => @typedefs).to_s)
           end
         end
