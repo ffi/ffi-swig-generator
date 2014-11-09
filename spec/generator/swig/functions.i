@@ -35,3 +35,4 @@ void func_24(char buf[12]);
 void func_25(CamelStruct *s);
 CamelStruct *func_26(void);
 void func_27(int (*func)(int argc, char *argv[]), int rc);
+int func_28(int (*callback)(va_list args));

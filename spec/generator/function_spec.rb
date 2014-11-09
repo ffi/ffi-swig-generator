@@ -87,4 +87,8 @@ describe Generator::Function do
     node = (@node / '[value="func_27"]').first.ancestors("cdecl").first
     Generator::Function.new(:node => node).to_s.should == "attach_function :func_27, :func_27, [ callback([ :int, :pointer ], :int), :int ], :pointer"
   end
+  it 'should handle callback pointer with va_list argument' do
+    node = (@node / '[value="func_28"]').first.ancestors("cdecl").first
+    Generator::Function.new(:node => node).to_s.should == "attach_function :func_28, :func_28, [ callback([ :pointer ], :int) ], :int"
+  end
 end
