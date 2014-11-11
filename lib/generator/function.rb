@@ -75,7 +75,8 @@ module FFI
         result
       end
       def get_rtype
-        Type.new(:declaration => @full_decl.scan(/f\([a-zA-z0-9,.\s\(\)]*\)\.([a-zA-Z0-9_\.,\s\(\)]+)/).flatten[0], :typedefs => @typedefs).to_s
+        ret = @full_decl.match(/(p\.)?(q\([a-z]+\)\.)*([^().]+)$/)[0]
+        Type.new(:declaration => ret, :typedefs => @typedefs).to_s
       end
     end
   end

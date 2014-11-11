@@ -37,3 +37,7 @@ struct test_struct_8 {
     int arg;
   } data;
 };
+
+struct test_struct_9 {
+  const struct test_struct_9 *(*fn)(int);
+};

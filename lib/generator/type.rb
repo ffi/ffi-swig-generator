@@ -23,10 +23,10 @@ module FFI
           @full_decl and @full_decl[ArrayRE]
         end
         def is_struct?
-          @full_decl[/^struct/]
+          @full_decl[/^(q\([a-z]+\)\.)*struct/]
         end
         def is_union?
-          @full_decl[/^union/]
+          @full_decl[/^(q\([a-z]+\)\.)*union/]
         end
         def is_constant?
           @full_decl[/^q\(const\)/]

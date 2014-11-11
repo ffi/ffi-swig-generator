@@ -61,4 +61,8 @@ describe Generator::Type do
     code.should \
       include("attach_function :fn, :fn, [ :string, :pointer ], :int")
   end
+  it 'will handle const struct pointers' do
+    Generator::Type.new(:declaration => 'p.q(const).struct test_struct_9').to_s \
+      .should eql("TestStruct9.ptr")
+  end
 end

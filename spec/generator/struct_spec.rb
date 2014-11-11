@@ -109,6 +109,12 @@ class TestStruct8 < FFI::Struct
 end
 EOC
   end
+
+  it 'will handle functionpointer member with const struct pointer rettype' do
+    node = (@node / "class//[value='test_struct_9']")[0].ancestors("class")[0]
+    Generator::Struct.new(:node => node).to_s.should \
+      include(":fn, callback([ :int ], TestStruct9.ptr)")
+  end
 end
 
 describe Generator::Union do
